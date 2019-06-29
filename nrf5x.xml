@@ -1,0 +1,212 @@
+<?xml version="1.0"?>
+<EmbeddedProfile xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema">
+  <ToolchainID>com.visualgdb.arm-eabi</ToolchainID>
+  <ToolchainVersion>
+    <GCC>7.2.0</GCC>
+    <GDB>8.0.1</GDB>
+    <Revision>3</Revision>
+  </ToolchainVersion>
+  <BspID>com.sysprogs.arm.nordic.nrf5x</BspID>
+  <BspVersion>14.2R2</BspVersion>
+  <McuID>nRF52840_XXAA</McuID>
+  <MCUDefinitionFile>nRF5x/DeviceDefinitions/nRF52.xml</MCUDefinitionFile>
+  <MCUProperties>
+    <Entries>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.arm.floatmode</Key>
+        <Value>-mfloat-abi=hard</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.softdevice</Key>
+        <Value>nosoftdev</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.toolchainoptions.arm.libctype</Key>
+        <Value>--specs=nano.specs</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.toolchainoptions.arm.libnosys</Key>
+        <Value>--specs=rdimon.specs</Value>
+      </KeyValue>
+    </Entries>
+  </MCUProperties>
+  <BSPSourceFolderName>Device-specific files</BSPSourceFolderName>
+  <MCUMakFile>nrf5x.mak</MCUMakFile>
+  <ReferencedFrameworks>
+    <string>com.sysprogs.arm.nordic.nrf5x.util</string>
+    <string>com.sysprogs.arm.nordic.nrf5x.periph</string>
+    <string>com.sysprogs.arm.nordic.nrf5x.boards</string>
+    <string>com.sysprogs.arm.nordic.nrf5x.libraries</string>
+  </ReferencedFrameworks>
+  <FrameworkProperties>
+    <Entries>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.pstorage_driver</Key>
+        <Value>none</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.spi_driver</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.swi_driver</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.twi_driver</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.uart_driver</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.board.type</Key>
+        <Value>PCA10056</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.board.bsp_mode</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.board.bsp_uart</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.atomic</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.atomic_fifo</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.balloc</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.block_dev</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.bootloader_dfu</Key>
+        <Value>none</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.experimental_task_manager</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.button</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.crc16</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.crc32</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.ecc</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.eddystone</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.fds</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.fifo</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.fstorage</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.gpiote</Key>
+        <Value>none</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.hci</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.led_softblink</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.low_power_pwm</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.pwm</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.pwr_mgmt</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.queue</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.slip</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.scheduler</Key>
+        <Value>none</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.sdcard</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.sensorsim</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.log</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.segger_rtt</Key>
+        <Value>0</Value>
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.sha256</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.simple_timer</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.timer</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.trace</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.twi</Key>
+        <Value />
+      </KeyValue>
+      <KeyValue>
+        <Key>com.sysprogs.bspoptions.nrf5x.libraries.uart</Key>
+        <Value />
+      </KeyValue>
+    </Entries>
+  </FrameworkProperties>
+  <TestFrameworkProperties>
+    <Entries />
+  </TestFrameworkProperties>
+</EmbeddedProfile>

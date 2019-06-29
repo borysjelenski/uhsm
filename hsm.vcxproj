@@ -1,0 +1,254 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|VisualGDB">
+      <Configuration>Debug</Configuration>
+      <Platform>VisualGDB</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|VisualGDB">
+      <Configuration>Release</Configuration>
+      <Platform>VisualGDB</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <VCProjectVersion>15.0</VCProjectVersion>
+    <ProjectGuid>{F6057A66-E664-425B-B49A-C0B2E289A533}</ProjectGuid>
+    <BSP_ID>com.sysprogs.arm.nordic.nrf5x</BSP_ID>
+    <BSP_VERSION>14.2R2</BSP_VERSION>
+    <InPlaceBSPSubdir />
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <MCUPropertyListFile>$(ProjectDir)nrf5x.props</MCUPropertyListFile>
+  </PropertyGroup>
+  <PropertyGroup Label="Configuration" Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <MCUPropertyListFile>$(ProjectDir)nrf5x.props</MCUPropertyListFile>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Label="Shared">
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <GNUConfigurationType>Debug</GNUConfigurationType>
+    <ToolchainID>com.visualgdb.arm-eabi</ToolchainID>
+    <ToolchainVersion>7.2.0/8.0.1/r3</ToolchainVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <ToolchainID>com.visualgdb.arm-eabi</ToolchainID>
+    <ToolchainVersion>7.2.0/8.0.1/r3</ToolchainVersion>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|VisualGDB'">
+    <ClCompile>
+      <CPPLanguageStandard>GNUPP14</CPPLanguageStandard>
+      <AdditionalIncludeDirectories>include;%(ClCompile.AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>DEBUG=1;%(ClCompile.PreprocessorDefinitions)</PreprocessorDefinitions>
+    </ClCompile>
+    <Link>
+      <AdditionalLinkerInputs>;%(Link.AdditionalLinkerInputs)</AdditionalLinkerInputs>
+      <LibrarySearchDirectories>;%(Link.LibrarySearchDirectories)</LibrarySearchDirectories>
+      <AdditionalLibraryNames>;%(Link.AdditionalLibraryNames)</AdditionalLibraryNames>
+      <LinkerScript />
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|VisualGDB'">
+    <ClCompile>
+      <CPPLanguageStandard>GNUPP14</CPPLanguageStandard>
+    </ClCompile>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+  <ItemGroup>
+    <ClCompile Include="src\main.cpp" />
+    <None Include="nrf5x.props" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\toolchain\system_nrf52840.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\toolchain\gcc\gcc_startup_nrf52840.S" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\clock\nrf_drv_clock.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\common\nrf_drv_common.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_nvmc.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_saadc.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\nrf_soc_nosd\nrf_nvic.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\nrf_soc_nosd\nrf_soc.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\radio_config\radio_config.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\sdio\sdio.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_error.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_error_weak.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_util_platform.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\util\nrf_assert.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\util\sdk_mapped_flags.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\boards\boards.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\bsp\bsp.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\bsp\bsp_nfc.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\nrf_cli.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\cdc_acm\nrf_cli_cdc_acm.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\rtt\nrf_cli_rtt.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\external\fprintf\nrf_fprintf.c" />
+    <ClCompile Include="$(BSP_ROOT)\nRF5x\external\fprintf\nrf_fprintf_format.c" />
+    <ClInclude Include="include\uhsm\statechart.h" />
+    <ClInclude Include="sdk_config.h" />
+    <ClInclude Include="radio_config.h" />
+    <ClInclude Include="sdio_config.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\system_nrf51.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\system_nrf52.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\system_nrf52810.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\system_nrf52840.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\arm_common_tables.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\arm_const_structs.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\arm_math.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\cmsis_armcc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\cmsis_armcc_V6.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\cmsis_gcc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cm0.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cm0plus.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cm3.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cm4.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cm7.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cmFunc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cmInstr.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_cmSimd.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_sc000.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\toolchain\cmsis\include\core_sc300.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\compiler_abstraction.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51422_peripherals.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51802_peripherals.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51822_peripherals.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51_bitfields.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51_deprecated.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51_to_nrf52.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51_to_nrf52810.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf51_to_nrf52840.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52810.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52810_bitfields.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52810_peripherals.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52832_peripherals.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52840.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52840_bitfields.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52840_peripherals.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52_bitfields.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52_name_change.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52_to_nrf52810.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\device\nrf52_to_nrf52840.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\ble_flash\ble_flash.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\clock\nrf_drv_clock.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\common\nrf_drv_common.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\comp\nrf_drv_comp.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\delay\nrf_delay.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\gpiote\nrf_drv_gpiote.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_clock.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_comp.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_ecb.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_egu.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_gpio.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_gpiote.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_i2s.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_lpcomp.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_nvmc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_pdm.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_peripherals.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_power.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_ppi.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_pwm.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_qdec.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_qspi.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_rng.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_rtc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_saadc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_spi.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_spim.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_spis.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_systick.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_temp.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_timer.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_twi.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_twim.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_twis.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_uart.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_uarte.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_usbd.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\hal\nrf_wdt.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\i2s\nrf_drv_i2s.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\lpcomp\nrf_drv_lpcomp.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\nrf_soc_nosd\nrf_error.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\nrf_soc_nosd\nrf_nvic.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\nrf_soc_nosd\nrf_soc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\pdm\nrf_drv_pdm.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\power\nrf_drv_power.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\ppi\nrf_drv_ppi.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\pwm\nrf_drv_pwm.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\qdec\nrf_drv_qdec.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\qspi\nrf_drv_qspi.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\rng\nrf_drv_rng.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\rtc\nrf_drv_rtc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\saadc\nrf_drv_saadc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\sdio\sdio.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\systick\nrf_drv_systick.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\timer\nrf_drv_timer.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\twis_slave\nrf_drv_twis.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\twi_master\nrf_drv_twi.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\twi_master\deprecated\twi_master.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\usbd\nrf_drv_usbd.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\usbd\nrf_drv_usbd_errata.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\drivers_nrf\wdt\nrf_drv_wdt.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_error.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_error_weak.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_util.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_util_bds.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\app_util_platform.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\nordic_common.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\nrf_assert.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\nrf_bitmask.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\sdk_common.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\sdk_errors.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\sdk_macros.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\sdk_mapped_flags.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\sdk_os.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\util\sdk_resources.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\boards\boards.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\boards\pca10056.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\bsp\bsp.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\bsp\bsp_btn_ble.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\bsp\bsp_config.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\bsp\bsp_nfc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\balloc\nrf_balloc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\nrf_cli.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\nrf_cli_types.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\nrf_cli_vt100.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\cdc_acm\nrf_cli_cdc_acm.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\rtt\nrf_cli_rtt.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\csense\nrf_csense.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\csense\nrf_csense_macros.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\csense_drv\nrf_drv_csense.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\experimental_memobj\nrf_memobj.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\experimental_mpu\nrf_mpu.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\experimental_ringbuf\nrf_ringbuf.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\experimental_section_vars\nrf_section.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\experimental_section_vars\nrf_section_iter.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\experimental_stack_guard\nrf_stack_guard.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\fstorage\nrf_fstorage.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\fstorage\nrf_fstorage_nvmc.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\fstorage\nrf_fstorage_sd.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\gfx\nrf_gfx.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\gfx\nrf_lcd.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\gpiote\app_gpiote.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\hardfault\hardfault.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\hardfault\hardfault_genhf.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\mutex\nrf_mtx.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\serial\nrf_serial.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\sortlist\nrf_sortlist.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\spi_mngr\nrf_spi_mngr.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\strerror\nrf_strerror.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\components\libraries\twi_mngr\nrf_twi_mngr.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\external\fprintf\nrf_fprintf.h" />
+    <ClInclude Include="$(BSP_ROOT)\nRF5x\external\fprintf\nrf_fprintf_format.h" />
+    <None Include="hsm-Debug.vgdbsettings" />
+    <None Include="hsm-Release.vgdbsettings" />
+    <None Include="nrf5x.xml" />
+  </ItemGroup>
+</Project>
