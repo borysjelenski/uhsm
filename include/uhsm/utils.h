@@ -1,5 +1,5 @@
-#ifndef UHSM_UTILS_H
-#define UHSM_UTILS_H
+#ifndef UHSM_UTILS_H_
+#define UHSM_UTILS_H_
 
 #include <type_traits>
 #include <tuple>
