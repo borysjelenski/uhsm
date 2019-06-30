@@ -27,21 +27,8 @@ namespace ushm::utils
   template<typename MatchT, typename TupleT>
   using contains_t = typename contains<MatchT, TupleT>::type;
   
-//  template<typename MatchStateT, typename TransitionsT>
-//  struct contains_src_state {
-//    using type = std::false_type;
-//  };
-//  template<typename MatchStateT, typename... TrElemTs, typename... TailTrTs>
-//  struct contains_src_state<MatchStateT, uhsm::Transition_table<uhsm::Transition<MatchStateT, TrElemTs...>, TailTrTs...>> {
-//    using type = std::true_type;
-//  };
-//  template<typename MatchStateT, typename StateT, typename... TrElemTs, typename... TailTrTs>
-//  struct contains_src_state<MatchStateT, uhsm::Transition_table<uhsm::Transition<StateT, TrElemTs...>, TailTrTs...>> {
-//    using type = std::false_type;
-//  };
-//  template<typename MatchStateT, typename TransitionsT>
-//  using contains_src_state_t = typename contains_src_state<MatchStateT, TransitionsT>::type;
-  
+  // NOTE: checks if uhsm::Transition_table contains a transition with a given source state;
+  // works similarly to `contains` template
   template<typename TransitionT, typename TransitionTableT>
   struct has_tr_w_src_state {
     using type = std::false_type;
@@ -54,34 +41,12 @@ namespace ushm::utils
   template<typename MatchStateT, typename StateT, typename... Tr1ElemTs, typename... Tr2ElemTs, typename... TailTrTs>
   struct has_tr_w_src_state<uhsm::Transition<MatchStateT, Tr1ElemTs...>,
     uhsm::Transition_table<uhsm::Transition<StateT, Tr2ElemTs...>, TailTrTs...>> {
-    using type = std::false_type;
+    using type = typename has_tr_w_src_state<uhsm::Transition<MatchStateT, Tr1ElemTs...>,
+      uhsm::Transition_table<TailTrTs...>>::type;
   };
+  
   template<typename MatchStateT, typename TransitionTableT>
   using has_tr_w_src_state_t = typename has_tr_w_src_state<MatchStateT, TransitionTableT>::type;
-  
-//    template<typename PredT, typename TupleT, typename = typename Pred<>>
-//    struct any_match {
-//      using type = std::false_type;
-//    };
-//    
-//    template<typename PredT, typename HeadT, typename... TailTs>
-//    struct any_match<PredT, std::tuple<HeadT, TailTs...>> {
-//      using 
-//    };
-  
-//    // NOTE: uniquely adds a type at the original tuple's head
-//  template<typename AddedT, typename TupleT, typename = typename contains<AddedT, TupleT>::type>
-//  struct add_unique;
-//  // original tuple does contain the type being added, leave original tuple unchanged
-//  template<typename AddedT, typename... TupleTs>
-//  struct add_unique<AddedT, std::tuple<TupleTs...>, std::true_type> {
-//    using type = std::tuple<TupleTs...>;
-//  };
-//  // original tuple does not contain the type being added, add it at the tuple's head
-//  template<typename AddedT, typename... TupleTs>
-//  struct add_unique<AddedT, std::tuple<TupleTs...>, std::false_type> {
-//    using type = std::tuple<AddedT, TupleTs...>;
-//  };
   
   // NOTE: uniquely adds a type at the original tuple's head
   template<template<class, class> class EqualPred, typename AddedT, typename TupleT,
@@ -100,45 +65,30 @@ namespace ushm::utils
   
   template<typename AddedT, typename TupleT>
   using add_unique_t = typename add_unique<contains, AddedT, TupleT>::type;
+
+  // TODO: rename to `add_unique_tr_by_src`
   template<typename TransitionT, typename TransitionTableT>
   using add_unique_tr_w_src_state_t = typename add_unique<has_tr_w_src_state, TransitionT, TransitionTableT>::type;
   
-//  // NOTE: removes duplicates from an std::tuple  
-//  template<typename TupleT>
-//  struct remove_duplicates;
-//  // uniquely add current type to the tuple's tail with already removed duplicates
-//  template<typename HeadT, typename... TailTs>
-//  struct remove_duplicates<std::tuple<HeadT, TailTs...>>  {
-//    using type = add_unique_t<HeadT, typename remove_duplicates<std::tuple<TailTs...>>::type>;
-//  };
-//  // a tuple with a single type cannot have duplicates
-//  template<typename TailT>
-//  struct remove_duplicates<std::tuple<TailT>> {
-//    using type = std::tuple<TailT>;
-//  };
-//  
-//  template<typename TupleT>
-//  using remove_duplicates_t = typename remove_duplicates<TupleT>::type;
-  
-    // NOTE: removes duplicates from an std::tuple  
-  template<typename TupleT>
+  // NOTE: removes duplicates from an std::tuple
+  template<template<class, class> class EqPred, typename TupleT>
   struct remove_duplicates;
   // uniquely add current type to the tuple's tail with already removed duplicates
-  template<typename HeadT, typename... TailTs>
-  struct remove_duplicates<std::tuple<HeadT, TailTs...>>  {
-    using type = add_unique_t<HeadT, typename remove_duplicates<std::tuple<TailTs...>>::type>;
+  template<template<class, class> class EqPred, typename HeadT, typename... TailTs>
+  struct remove_duplicates<EqPred, std::tuple<HeadT, TailTs...>>  {
+    using type = typename add_unique<EqPred, HeadT, typename remove_duplicates<EqPred, std::tuple<TailTs...>>::type>::type;
   };
   // a tuple with a single type cannot have duplicates
-  template<typename TailT>
-  struct remove_duplicates<std::tuple<TailT>> {
+  template<template<class, class> class EqPred, typename TailT>
+  struct remove_duplicates<EqPred, std::tuple<TailT>> {
     using type = std::tuple<TailT>;
   };
   
   template<typename TupleT>
-  using remove_duplicates_t = typename remove_duplicates<TupleT>::type;
+  using remove_duplicates_t = typename remove_duplicates<contains, TupleT>::type;
   
-  
-  
+  template<typename TransitionTableT>
+  using rm_dupl_tr_by_src_t = typename remove_duplicates<has_tr_w_src_state, TransitionTableT>::type;
   
   // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
@@ -207,7 +157,7 @@ namespace ushm::utils
     static_assert(std::is_same_v <Bool_contains, std::false_type>);
   }
   
-  namespace TestContainsSrcState_DoesContain_ReturnTrue
+  namespace TestHasTrWSrcState_DoesContain_ReturnTrue
   {
     struct Unknown_state {};
     // NOTE: it does not matter that the transition table does not have a transition
@@ -217,13 +167,68 @@ namespace ushm::utils
     static_assert(std::is_same_v <Bool_contains, std::true_type>);
   }
   
-  namespace TestAddUniqueState_AddAlreadyPresent_TableUnchanged
+  namespace TestAddUniqueTrWSrcState_AddAlreadyPresent_TableUnchanged
   {
     using New_transition = uhsm::Transition<Common::Off, Common::Brownout, Common::Off>;
     using New_table = add_unique_tr_w_src_state_t<New_transition, Common::Transitions>;
     // NOTE: new transition not added to the table because there is already a transition
     // with 'Off' source state
     static_assert(std::is_same_v<New_table, Common::Transitions>);
+  }
+  
+  namespace TestAddUniqueTrWSrcState_AddNotPresent_TransitionAdded
+  {
+    struct New_state {};
+    using New_transition = uhsm::Transition<New_state, Common::Brownout, Common::Off>;
+    using New_table = add_unique_tr_w_src_state_t<New_transition, Common::Transitions>;
+    using Expected_table = uhsm::Transition_table<
+      New_transition,
+      uhsm::Transition<Common::Off, Common::Pwr_btn_pressed, Common::On>,
+      uhsm::Transition<Common::On, Common::Pwr_btn_pressed, Common::Off>,
+      uhsm::Transition<Common::On, Common::Brownout, Common::Off>
+    >;
+    static_assert(std::is_same_v<New_table, Expected_table>);
+  }
+  
+  namespace TestRmDuplTrBySrc_NoDupl_TableUnchanged
+  {
+    struct StateA {};
+    struct StateB {};
+    struct Some_event {};
+    using No_dupl_table = uhsm::Transition_table<
+      uhsm::Transition<StateA, Some_event, StateB>,
+      uhsm::Transition<StateB, Some_event, StateA>
+    >;
+    using New_table = rm_dupl_tr_by_src_t<No_dupl_table>;
+    static_assert(std::is_same_v<New_table, No_dupl_table>);
+  }
+  
+  namespace TestRmDuplTrBySrc_DuplPresent_DuplRemoved
+  {    
+    struct StateA {};
+    struct StateB {};
+    struct StateC {};
+    struct Event1 {};
+    struct Event2 {};
+    // NOTE: duplicate types occur both adjacently and on the parameter list
+    using Dupl_table = uhsm::Transition_table<
+      uhsm::Transition<StateC, Event2, StateA>,
+      uhsm::Transition<StateA, Event1, StateB>,
+      uhsm::Transition<StateA, Event2, StateC>,
+      uhsm::Transition<StateB, Event2, StateA>,
+      uhsm::Transition<StateB, Event1, StateA>,
+      uhsm::Transition<StateC, Event1, StateA>,
+      uhsm::Transition<StateB, Event1, StateA>,
+      uhsm::Transition<StateC, Event2, StateA>
+    >;
+    using New_table = rm_dupl_tr_by_src_t<Dupl_table>;
+    // NOTE: every last transition with an unique source state remains in the output table
+    using Expected_table = uhsm::Transition_table<
+      uhsm::Transition<StateA, Event2, StateC>,
+      uhsm::Transition<StateB, Event1, StateA>,
+      uhsm::Transition<StateC, Event2, StateA>
+    >;
+    static_assert(std::is_same_v<New_table, Expected_table>);
   }
 }
 
