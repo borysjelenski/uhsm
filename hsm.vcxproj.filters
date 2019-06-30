@@ -615,5 +615,8 @@
     <ClInclude Include="include\uhsm\statechart.h">
       <Filter>include\uhsm</Filter>
     </ClInclude>
+    <ClInclude Include="include\uhsm\utils.h">
+      <Filter>include\uhsm</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

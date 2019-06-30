@@ -3,17 +3,11 @@
 
 #include <cstddef>
 #include <tuple>
+#include "uhsm/fwd.h"
 #include "uhsm/utils.h"
 
 namespace uhsm
-{
-  // TODO: consider defining those in `Complex_state` only
-  // as only complex states can have transition tables
-  template<typename SrcStateT, typename EventT, typename DestStateT>
-  struct Transition {};
-  template<typename... TransitionsT>
-  using Transition_table = std::tuple<TransitionsT...>;
-  
+{  
   template<typename T, typename ParentStateT>
   struct Simple_state {
     using Parent = ParentStateT;
