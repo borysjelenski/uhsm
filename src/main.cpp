@@ -26,7 +26,7 @@ struct Player : uhsm::Statechart<Player> {
     Transition<Off, Event::Power_pressed, On>,
     Transition<On, Event::Power_pressed, Off>
   >;
-};
+}; 
 
 int main()
 {

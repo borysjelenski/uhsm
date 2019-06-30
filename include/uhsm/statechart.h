@@ -3,6 +3,7 @@
 
 #include <cstddef>
 #include <tuple>
+#include "uhsm/utils.h"
 
 namespace uhsm
 {
