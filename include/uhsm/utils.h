@@ -27,27 +27,6 @@ namespace ushm::utils
   template<typename MatchT, typename TupleT>
   using contains_t = typename contains<MatchT, TupleT>::type;
   
-  // NOTE: checks if uhsm::Transition_table contains a transition with a given source state;
-  // works similarly to `contains` template
-  template<typename TransitionT, typename TransitionTableT>
-  struct has_tr_w_src_state {
-    using type = std::false_type;
-  };
-  template<typename MatchStateT, typename... Tr1ElemsTs, typename... Tr2ElemTs, typename... TailTrTs>
-  struct has_tr_w_src_state<uhsm::Transition<MatchStateT, Tr1ElemsTs...>,
-    uhsm::Transition_table<uhsm::Transition<MatchStateT, Tr2ElemTs...>, TailTrTs...>> {
-    using type = std::true_type;
-  };
-  template<typename MatchStateT, typename StateT, typename... Tr1ElemTs, typename... Tr2ElemTs, typename... TailTrTs>
-  struct has_tr_w_src_state<uhsm::Transition<MatchStateT, Tr1ElemTs...>,
-    uhsm::Transition_table<uhsm::Transition<StateT, Tr2ElemTs...>, TailTrTs...>> {
-    using type = typename has_tr_w_src_state<uhsm::Transition<MatchStateT, Tr1ElemTs...>,
-      uhsm::Transition_table<TailTrTs...>>::type;
-  };
-  
-  template<typename MatchStateT, typename TransitionTableT>
-  using has_tr_w_src_state_t = typename has_tr_w_src_state<MatchStateT, TransitionTableT>::type;
-  
   // NOTE: uniquely adds a type at the original tuple's head
   template<template<class, class> class EqualPred, typename AddedT, typename TupleT,
     typename = typename EqualPred<AddedT, TupleT>::type>
@@ -65,11 +44,8 @@ namespace ushm::utils
   
   template<typename AddedT, typename TupleT>
   using add_unique_t = typename add_unique<contains, AddedT, TupleT>::type;
-
-  // TODO: rename to `add_unique_tr_by_src`
-  template<typename TransitionT, typename TransitionTableT>
-  using add_unique_tr_w_src_state_t = typename add_unique<has_tr_w_src_state, TransitionT, TransitionTableT>::type;
   
+  // TODO: change name to `rm_dupl`
   // NOTE: removes duplicates from an std::tuple
   template<template<class, class> class EqPred, typename TupleT>
   struct remove_duplicates;
@@ -86,9 +62,6 @@ namespace ushm::utils
   
   template<typename TupleT>
   using remove_duplicates_t = typename remove_duplicates<contains, TupleT>::type;
-  
-  template<typename TransitionTableT>
-  using rm_dupl_tr_by_src_t = typename remove_duplicates<has_tr_w_src_state, TransitionTableT>::type;
   
   template<typename AddedT, typename TupleT>
   struct prepend;
@@ -210,88 +183,6 @@ namespace ushm::utils
     >;
     using State_tuple = flatten_by_1st_t<Table>;
     static_assert(std::is_same_v<State_tuple, std::tuple<StateA, StateB, StateC>>);
-  }
-  
-  namespace TestHasTrWSrcState_DoesNotContain_ReturnFalse
-  {
-    struct Unknown_state {};
-    using Tested_tr = uhsm::Transition<Unknown_state, Common::Pwr_btn_pressed, Common::On>;
-    using Bool_contains = has_tr_w_src_state_t<Tested_tr, Common::Transitions>;
-    static_assert(std::is_same_v <Bool_contains, std::false_type>);
-  }
-  
-  namespace TestHasTrWSrcState_DoesContain_ReturnTrue
-  {
-    struct Unknown_state {};
-    // NOTE: it does not matter that the transition table does not have a transition
-    // exactly like the following one; only matching source types matters
-    using Tested_tr = uhsm::Transition<Common::Off, Common::Pwr_btn_pressed, Unknown_state>;
-    using Bool_contains = has_tr_w_src_state_t<Tested_tr, Common::Transitions>;
-    static_assert(std::is_same_v <Bool_contains, std::true_type>);
-  }
-  
-  namespace TestAddUniqueTrWSrcState_AddAlreadyPresent_TableUnchanged
-  {
-    using New_transition = uhsm::Transition<Common::Off, Common::Brownout, Common::Off>;
-    using New_table = add_unique_tr_w_src_state_t<New_transition, Common::Transitions>;
-    // NOTE: new transition not added to the table because there is already a transition
-    // with 'Off' source state
-    static_assert(std::is_same_v<New_table, Common::Transitions>);
-  }
-  
-  namespace TestAddUniqueTrWSrcState_AddNotPresent_TransitionAdded
-  {
-    struct New_state {};
-    using New_transition = uhsm::Transition<New_state, Common::Brownout, Common::Off>;
-    using New_table = add_unique_tr_w_src_state_t<New_transition, Common::Transitions>;
-    using Expected_table = uhsm::Transition_table<
-      New_transition,
-      uhsm::Transition<Common::Off, Common::Pwr_btn_pressed, Common::On>,
-      uhsm::Transition<Common::On, Common::Pwr_btn_pressed, Common::Off>,
-      uhsm::Transition<Common::On, Common::Brownout, Common::Off>
-    >;
-    static_assert(std::is_same_v<New_table, Expected_table>);
-  }
-  
-  namespace TestRmDuplTrBySrc_NoDupl_TableUnchanged
-  {
-    struct StateA {};
-    struct StateB {};
-    struct Some_event {};
-    using No_dupl_table = uhsm::Transition_table<
-      uhsm::Transition<StateA, Some_event, StateB>,
-      uhsm::Transition<StateB, Some_event, StateA>
-    >;
-    using New_table = rm_dupl_tr_by_src_t<No_dupl_table>;
-    static_assert(std::is_same_v<New_table, No_dupl_table>);
-  }
-  
-  namespace TestRmDuplTrBySrc_DuplPresent_DuplRemoved
-  {    
-    struct StateA {};
-    struct StateB {};
-    struct StateC {};
-    struct Event1 {};
-    struct Event2 {};
-    // NOTE: duplicate types occur both adjacently and on the parameter list
-    using Dupl_table = uhsm::Transition_table<
-      uhsm::Transition<StateC, Event2, StateA>,
-      uhsm::Transition<StateA, Event1, StateB>,
-      uhsm::Transition<StateA, Event2, StateC>,
-      uhsm::Transition<StateB, Event2, StateA>,
-      uhsm::Transition<StateB, Event1, StateA>,
-      uhsm::Transition<StateC, Event1, StateA>,
-      uhsm::Transition<StateB, Event1, StateA>,
-      uhsm::Transition<StateC, Event2, StateA>
-    >;
-    using New_table = rm_dupl_tr_by_src_t<Dupl_table>;
-    // NOTE: every last transition with an unique source state remains in the output table
-    using Expected_table = uhsm::Transition_table<
-      uhsm::Transition<StateA, Event2, StateC>,
-      uhsm::Transition<StateB, Event1, StateA>,
-      uhsm::Transition<StateC, Event2, StateA>
-    >;
-    static_assert(std::is_same_v<New_table, Expected_table>);
   }
 }
 

@@ -5,6 +5,7 @@
 #include <tuple>
 #include "uhsm/fwd.h"
 #include "uhsm/utils.h"
+#include "uhsm/helpers.h"
 
 namespace uhsm
 {  
