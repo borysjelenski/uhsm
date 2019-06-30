@@ -100,7 +100,6 @@ namespace ushm::utils
   template<typename AddedT, typename TupleT>
   using prepend_t = typename prepend<AddedT, TupleT>::type;
   
-
   template<typename TupleT>
   struct flatten_by_1st;  
   template<typename MatchT, typename... OtherTs, typename... TailTupleTs>
@@ -195,19 +194,22 @@ namespace ushm::utils
     >;
     using Flat_tuple = flatten_by_1st_t<Nested_tuple>;
     static_assert(std::is_same_v<Flat_tuple, std::tuple<A, B, C>>);
-    
-//    struct StateA {};
-//    struct StateB {};
-//    struct StateC {};
-//    struct Event1 {};
-//    struct Event2 {};
-//    using Table = uhsm::Transition_table<
-//      uhsm::Transition<StateA, Event2, StateC>,
-//      uhsm::Transition<StateB, Event1, StateA>,
-//      uhsm::Transition<StateC, Event2, StateA>
-//    >;
-//    using State_set = typename flatten_by_1st<Table>::type;
-//    static_assert<std::is_same_v<State_set, std::tuple<StateA, StateB, StateC>>;
+  }
+  
+  namespace TestFlattenBy1St_TransitionTable_ReturnStateTuple
+  {
+    struct StateA {};
+    struct StateB {};
+    struct StateC {};
+    struct Event1 {};
+    struct Event2 {};
+    using Table = uhsm::Transition_table<
+      uhsm::Transition<StateA, Event2, StateC>,
+      uhsm::Transition<StateB, Event1, StateA>,
+      uhsm::Transition<StateC, Event2, StateA>
+    >;
+    using State_tuple = flatten_by_1st_t<Table>;
+    static_assert(std::is_same_v<State_tuple, std::tuple<StateA, StateB, StateC>>);
   }
   
   namespace TestHasTrWSrcState_DoesNotContain_ReturnFalse
