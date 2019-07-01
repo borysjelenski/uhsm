@@ -3,7 +3,7 @@
 
 #include "uhsm/utils.h"
 
-namespace ushm::helpers
+namespace uhsm::helpers
 {
   // checks if uhsm::Transition_table contains a transition with a given source state;
   // works similarly to `contains` template
@@ -32,6 +32,17 @@ namespace ushm::helpers
   
   template<typename TransitionTableT>
   using rm_dupl_tr_by_src_t = typename utils::remove_duplicates<has_tr_w_src_state, TransitionTableT>::type;
+  
+  template<typename TransitionTableT>
+  struct extract_state_set {
+    using type = utils::flatten_by_1st_t<rm_dupl_tr_by_src_t<TransitionTableT>>;
+  };
+  
+  template<typename TransitionTableT>
+  using extract_state_set_t = typename extract_state_set<TransitionTableT>::type;
+  
+    // Compile-time tests
+  ////////////////////////////////////////////////////////////////////////////////
   
   // TODO: currently duplicated in both utils.h and helpers.h
   namespace Test_data

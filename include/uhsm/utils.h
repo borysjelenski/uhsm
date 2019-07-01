@@ -5,7 +5,7 @@
 #include <tuple>
 #include "uhsm/fwd.h"
 
-namespace ushm::utils
+namespace uhsm::utils
 { 
   // NOTE: checks if a std::tuple contains a type; assumes that it does not
   // unless 'proven' otherwise

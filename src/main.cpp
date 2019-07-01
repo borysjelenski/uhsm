@@ -2,8 +2,8 @@
 
 namespace Event
 {
-  struct Power_pressed;
-  struct Play_pause_pressed;
+  struct Power_pressed {};
+  struct Play_pause_pressed {};
 }
 
 struct Player : uhsm::Statechart<Player> {
@@ -31,4 +31,5 @@ struct Player : uhsm::Statechart<Player> {
 int main()
 {
   Player player_statechart;
+  player_statechart.react(Event::Power_pressed{});
 }

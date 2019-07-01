@@ -8,7 +8,13 @@
 #include "uhsm/helpers.h"
 
 namespace uhsm
-{  
+{ 
+  template<typename T>
+  struct Derived_traits {
+    using Initial = typename T::Initial;
+    using Transitions = typename T::Transitions;
+  };
+  
   template<typename T, typename ParentStateT>
   struct Simple_state {
     using Parent = ParentStateT;
@@ -27,10 +33,16 @@ namespace uhsm
     template<typename... TransitionsT>
     using Transition_table = uhsm::Transition_table<TransitionsT...>;
     
+    template<typename U>
+    using State_set = helpers::extract_state_set_t<typename Derived_traits<U>::Transitions>;
+    template<typename U>
+    using Initial = typename Derived_traits<U>::Initial;
+    
     template<typename EventT>
     void react(const EventT& evt)
     {
-      
+      State_set<T> set;
+      Initial<T> initial;
     }
     
     void init_curr_state();
