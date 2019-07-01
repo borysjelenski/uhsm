@@ -29,6 +29,7 @@ namespace uhsm
     template<typename U>
     using State = uhsm::Complex_state<U, Complex_state<T, Parent>>;
     template<typename SrcStateT, typename EventT, typename DestStateT>
+      
     using Transition = uhsm::Transition<SrcStateT, EventT, DestStateT>;
     template<typename... TransitionsT>
     using Transition_table = uhsm::Transition_table<TransitionsT...>;
@@ -36,16 +37,22 @@ namespace uhsm
     template<typename U>
     using State_set = helpers::extract_state_set_t<typename Derived_traits<U>::Transitions>;
     template<typename U>
+    using Transitions = typename Derived_traits<U>::Transitions;
+    template<typename U>
     using Initial = typename Derived_traits<U>::Initial;
     
+    Complex_state()
+      : curr_state_idx{helpers::get_state_idx_v<Initial<T>, State_set<T>>}
+    {
+    }
+    
     template<typename EventT>
-    void react(const EventT& evt)
+    void react(EventT&& evt)
     {
       State_set<T> set;
       Initial<T> initial;
+      Transitions<T> trs; 
     }
-    
-    void init_curr_state();
     
     size_t curr_state_idx;
   };

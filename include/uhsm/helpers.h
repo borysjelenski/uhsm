@@ -41,7 +41,55 @@ namespace uhsm::helpers
   template<typename TransitionTableT>
   using extract_state_set_t = typename extract_state_set<TransitionTableT>::type;
   
-    // Compile-time tests
+  // gets index of a state in a set of state (tuple)
+  template<size_t N, typename MatchStateT, typename StateSetT>
+  struct get_state_idx_impl;
+  template<size_t N, typename MatchStateT, typename... TailStateTs>
+  struct get_state_idx_impl<N, MatchStateT, std::tuple<MatchStateT, TailStateTs...>>  {
+    static constexpr size_t value = N;
+  };
+  template<size_t N, typename MatchStateT, typename HeadStateT, typename... TailStateTs>
+  struct get_state_idx_impl<N, MatchStateT, std::tuple<HeadStateT, TailStateTs...>> {
+    static constexpr size_t value = get_state_idx_impl<N + 1, MatchStateT, std::tuple<TailStateTs...>>::value;
+  };
+  
+  template<typename MatchStateT, typename StateSetT>
+  inline constexpr size_t get_state_idx_v = get_state_idx_impl<0, MatchStateT, StateSetT>::value;
+  
+  template<typename TransitionT>
+  using get_tr_src_state = std::tuple_element_t<0, TransitionT>;
+  template<typename TransitionT>
+  using get_tr_event = std::tuple_element_t<1, TransitionT>;
+  template<typename TransitionT>
+  using get_tr_dest_state = std::tuple_element_t<2, TransitionT>;
+  
+  template<typename StateSetT, typename TransitionT>
+  inline constexpr size_t get_tr_src_state_idx_v = get_state_idx_v<get_tr_src_state<TransitionT>>;
+  template<typename StateSetT, typename TransitionT>
+  inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>>;
+  
+  template<typename StateSetT, typename EventT, typename TransitionT, typename... TransitionTs>
+  constexpr auto dispatch_event_impl(size_t current_state_idx, EventT&& evt)
+  {
+    if constexpr (sizeof...(TransitionTs) > 0) {
+      if constexpr (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
+        std::is_same_v<get_tr_event<TransitionT>, EventT>) {
+        return get_tr_dest_state_idx_v<StateSetT, TransitionT>;
+      }
+    }
+  }
+  
+  template<typename StateSetT, typename EventT, typename TransitionTableT>
+  struct Event_dispatcher;
+  template<typename StateSetT, typename EventT, typename HeadTrT, typename... TailTrTs>
+  struct Event_dispatcher<StateSetT, EventT, uhsm::Transition_table<HeadTrT, TailTrTs...>> {
+    static constexpr auto dispatch(size_t current_state_idx, EventT&& evt)
+    {
+      return dispatch_event_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, evt);
+    }
+  };
+  
+  // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
   
   // TODO: currently duplicated in both utils.h and helpers.h

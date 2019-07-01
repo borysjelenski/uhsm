@@ -30,6 +30,6 @@ struct Player : uhsm::Statechart<Player> {
 
 int main()
 {
-  Player player_statechart;
-  player_statechart.react(Event::Power_pressed{});
+  Player player_sc;
+  player_sc.react(Event::Power_pressed{});
 }
