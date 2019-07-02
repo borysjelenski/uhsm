@@ -26,10 +26,32 @@ struct Player : uhsm::Statechart<Player> {
     Transition<Off, Event::Power_pressed, On>,
     Transition<On, Event::Power_pressed, Off>
   >;
-}; 
+};
+
+struct Device : uhsm::Statechart<Device>
+{
+  // States
+  struct Disabled : Simple_state<Disabled> {};
+  struct Enabled : Simple_state<Enabled> {};
+  // Events
+  struct Turn_on {};
+  struct Turn_off {};
+  
+  using Initial = Disabled;
+  using Transitions = Transition_table<
+    Transition<Disabled, Turn_off, Disabled>,
+    Transition<Disabled, Turn_on, Enabled>,
+    Transition<Enabled, Turn_on, Enabled>,
+    Transition<Enabled, Turn_off, Disabled>
+  >;
+};
 
 int main()
 {
-  Player player_sc;
-  player_sc.react(Event::Power_pressed{});
+//  Player player_sc;
+//  player_sc.react(Event::Power_pressed{});
+  
+  Device dev_sc;
+  dev_sc.react(Device::Turn_off{});
+  dev_sc.react(Device::Turn_on{});
 }

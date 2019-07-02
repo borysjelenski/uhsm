@@ -618,5 +618,11 @@
     <ClInclude Include="include\uhsm\utils.h">
       <Filter>include\uhsm</Filter>
     </ClInclude>
+    <ClInclude Include="include\uhsm\fwd.h">
+      <Filter>include\uhsm</Filter>
+    </ClInclude>
+    <ClInclude Include="include\uhsm\helpers.h">
+      <Filter>include\uhsm</Filter>
+    </ClInclude>
   </ItemGroup>
 </Project>

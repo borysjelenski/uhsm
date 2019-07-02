@@ -64,19 +64,24 @@ namespace uhsm::helpers
   using get_tr_dest_state = std::tuple_element_t<2, TransitionT>;
   
   template<typename StateSetT, typename TransitionT>
-  inline constexpr size_t get_tr_src_state_idx_v = get_state_idx_v<get_tr_src_state<TransitionT>>;
+  inline constexpr size_t get_tr_src_state_idx_v = get_state_idx_v<get_tr_src_state<TransitionT>, StateSetT>;
   template<typename StateSetT, typename TransitionT>
-  inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>>;
+  inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>, StateSetT>;
   
   template<typename StateSetT, typename EventT, typename TransitionT, typename... TransitionTs>
   constexpr auto dispatch_event_impl(size_t current_state_idx, EventT&& evt)
   {
     if constexpr (sizeof...(TransitionTs) > 0) {
-      if constexpr (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
+      if (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
         std::is_same_v<get_tr_event<TransitionT>, EventT>) {
         return get_tr_dest_state_idx_v<StateSetT, TransitionT>;
       }
+      
+      return dispatch_event_impl<StateSetT, EventT, TransitionTs...>(current_state_idx, std::forward<EventT>(evt));
     }
+    
+    // DEBUG
+    return (size_t)0;
   }
   
   template<typename StateSetT, typename EventT, typename TransitionTableT>
@@ -85,7 +90,7 @@ namespace uhsm::helpers
   struct Event_dispatcher<StateSetT, EventT, uhsm::Transition_table<HeadTrT, TailTrTs...>> {
     static constexpr auto dispatch(size_t current_state_idx, EventT&& evt)
     {
-      return dispatch_event_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, evt);
+      return dispatch_event_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
     }
   };
   

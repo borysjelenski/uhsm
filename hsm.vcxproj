@@ -88,6 +88,8 @@
     <ClCompile Include="$(BSP_ROOT)\nRF5x\components\libraries\cli\rtt\nrf_cli_rtt.c" />
     <ClCompile Include="$(BSP_ROOT)\nRF5x\external\fprintf\nrf_fprintf.c" />
     <ClCompile Include="$(BSP_ROOT)\nRF5x\external\fprintf\nrf_fprintf_format.c" />
+    <ClInclude Include="include\uhsm\fwd.h" />
+    <ClInclude Include="include\uhsm\helpers.h" />
     <ClInclude Include="include\uhsm\statechart.h" />
     <ClInclude Include="include\uhsm\utils.h" />
     <ClInclude Include="sdk_config.h" />

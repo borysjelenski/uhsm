@@ -48,10 +48,9 @@ namespace uhsm
     
     template<typename EventT>
     void react(EventT&& evt)
-    {
-      State_set<T> set;
-      Initial<T> initial;
-      Transitions<T> trs; 
+    {      
+      curr_state_idx = helpers::Event_dispatcher<State_set<T>, EventT, Transitions<T>>
+        ::dispatch(curr_state_idx, std::forward<EventT>(evt));
     }
     
     size_t curr_state_idx;
