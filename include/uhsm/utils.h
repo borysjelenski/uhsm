@@ -87,6 +87,16 @@ namespace uhsm::utils
   template<typename TupleT>
   using flatten_by_1st_t = typename flatten_by_1st<TupleT>::type;
   
+  template<template<class...> class Func, typename TupleT>
+  struct apply_func;
+  template<template<class...> class Func, typename... Ts>
+  struct apply_func<Func, std::tuple<Ts...>> {
+    using type = Func<Ts...>;
+  };
+  
+  template<template<class...> class Func, typename TupleT>
+  using apply_func_t = typename apply_func<Func, TupleT>::type;
+  
   // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
   

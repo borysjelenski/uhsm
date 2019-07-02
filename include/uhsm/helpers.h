@@ -1,6 +1,7 @@
 #ifndef UHSM_HELPERS_H_
 #define UHSM_HELPERS_H_
 
+#include <limits>
 #include "uhsm/utils.h"
 
 namespace uhsm::helpers
@@ -80,8 +81,7 @@ namespace uhsm::helpers
       return dispatch_event_impl<StateSetT, EventT, TransitionTs...>(current_state_idx, std::forward<EventT>(evt));
     }
     
-    // DEBUG
-    return (size_t)0;
+    return std::numeric_limits<size_t>::max();
   }
   
   template<typename StateSetT, typename EventT, typename TransitionTableT>
@@ -93,6 +93,9 @@ namespace uhsm::helpers
       return dispatch_event_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
     }
   };
+    
+  template<typename TransitionTableT>
+  using get_state_data_def_t = utils::apply_func_t<std::variant, helpers::extract_state_set_t<TransitionTableT>>;
   
   // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
@@ -194,6 +197,22 @@ namespace uhsm::helpers
       uhsm::Transition<StateC, Event2, StateA>
     >;
     static_assert(std::is_same_v<New_table, Expected_table>);
+  }
+  
+  namespace TestStateData_TransitionTablePassed_ReturnStateData
+  {
+    struct StateA {};
+    struct StateB {};
+    struct StateC {};
+    struct Event1 {};
+    struct Event2 {};
+    using Transitions = uhsm::Transition_table<
+      uhsm::Transition<StateA, Event1, StateB>,
+      uhsm::Transition<StateB, Event2, StateA>,
+      uhsm::Transition<StateC, Event1, StateA>
+    >;
+    using State_data_def = get_state_data_def_t<Transitions>;
+    static_assert(std::is_same_v<State_data_def, std::variant<StateA, StateB, StateC>>);
   }
 }
 
