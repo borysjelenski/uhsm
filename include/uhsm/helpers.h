@@ -77,7 +77,7 @@ namespace uhsm::helpers
   // a transition at each level
   
   template<typename StateSetT, typename EventT, typename TransitionT, typename... TransitionTs>
-  constexpr auto dispatch_event_impl(size_t current_state_idx, EventT&& evt)
+  constexpr auto search_next_state(size_t current_state_idx, EventT&& evt)
   {
     if constexpr (sizeof...(TransitionTs) > 0) {
       if (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
@@ -85,19 +85,19 @@ namespace uhsm::helpers
         return get_tr_dest_state_idx_v<StateSetT, TransitionT>;
       }
       
-      return dispatch_event_impl<StateSetT, EventT, TransitionTs...>(current_state_idx, std::forward<EventT>(evt));
+      return search_next_state<StateSetT, EventT, TransitionTs...>(current_state_idx, std::forward<EventT>(evt));
     }
     
     return std::numeric_limits<size_t>::max();
   }
   
   template<typename StateSetT, typename EventT, typename TransitionTableT>
-  struct Event_dispatcher;
+  struct Next_state_search;
   template<typename StateSetT, typename EventT, typename HeadTrT, typename... TailTrTs>
-  struct Event_dispatcher<StateSetT, EventT, uhsm::Transition_table<HeadTrT, TailTrTs...>> {
-    static constexpr auto dispatch(size_t current_state_idx, EventT&& evt)
+  struct Next_state_search<StateSetT, EventT, uhsm::Transition_table<HeadTrT, TailTrTs...>> {
+    static constexpr auto search(size_t current_state_idx, EventT&& evt)
     {
-      return dispatch_event_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
+      return search_next_state<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
     }
   };
   

@@ -86,15 +86,15 @@ namespace uhsm
     {
       T& derived = static_cast<T&>(*this);
       
-      const auto new_state_idx = helpers::Event_dispatcher<State_set<T>, EventT, Transitions<T>>
-        ::dispatch(curr_state_idx, std::forward<EventT>(evt));
+      const auto new_state_idx = helpers::Next_state_search<State_set<T>, EventT, Transitions<T>>
+        ::search(curr_state_idx, std::forward<EventT>(evt));
       
       if (new_state_idx != std::numeric_limits<size_t>::max()) {
         curr_state_idx = new_state_idx;
         
         return true;
       }
-      
+       
        
     }
     
