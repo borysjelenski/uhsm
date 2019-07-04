@@ -132,7 +132,7 @@ namespace uhsm::helpers
         
         // NOTE: as processing of the event is deferred to higher hierarchy level the current state
         // for this level is reset to the initial one
-        using Initial = typename StateT::template Initial<StateT>;
+        using Initial = typename StateT::Initial;
         state.state_data = Initial{};
           
         return false;
@@ -152,9 +152,14 @@ namespace uhsm::helpers
     }
   }
   
-  template<typename StateT, typename EventT>
-  struct Event_dispatcher {
-    
+  template<typename StateT, typename EventT, typename NestedStateSetT>
+  struct Event_dispatcher;
+  template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
+  struct Event_dispatcher<StateT, EventT, std::tuple<NestedStateT, NestedStateTs...>> {
+    static constexpr auto dispatch(StateT& state, EventT && event) {
+      dispatch_event_impl<StateT, EventT, NestedStateT, NestedStateTs...>(
+        state, std::forward<EventT>(event));
+    }
   };
     
   template<typename TransitionTableT>

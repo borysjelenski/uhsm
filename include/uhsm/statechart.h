@@ -85,22 +85,12 @@ namespace uhsm
     template<typename EventT>
     bool react(EventT&& evt)
     {
-      T& derived = static_cast<T&>(*this);
-      
-      const auto new_state_idx = helpers::Next_state_search<State_set<T>, EventT, Transitions<T>>
-        ::search(curr_state_idx, std::forward<EventT>(evt));
-      
-      if (new_state_idx != std::numeric_limits<size_t>::max()) {
-        curr_state_idx = new_state_idx;
-        
-        return true;
-      }
-       
-       
+      auto& derived = static_cast<T&>(*this); 
+      helpers::Event_dispatcher<T, EventT, State_set<T>>::dispatch(derived, std::forward<EventT>(evt));
     }
     
+    // DEBUG: not used anymore; current state indicated by the internal variant's index
     size_t curr_state_idx;
-    
   };
   
   struct No_parent_state {};

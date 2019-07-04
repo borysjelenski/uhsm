@@ -54,8 +54,8 @@ struct Device : uhsm::Statechart<Device>
 
 int main()
 {
-//  Player player_sc;
-//  player_sc.react(Event::Power_pressed{});
+  Player player_sc;
+  player_sc.react(Event::Power_pressed{});
   
   Device dev_sc;
   dev_sc.start();
