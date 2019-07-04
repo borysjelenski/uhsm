@@ -62,3 +62,4 @@ int main()
   dev_sc.react(Device::Turn_off{});
   dev_sc.react(Device::Turn_on{});
 }
+ 

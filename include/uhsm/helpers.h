@@ -105,14 +105,9 @@ namespace uhsm::helpers
     }
   };
   
-  // TODO: write a 'true' dispatching mechanism that for a given hierarchy (nesting) level
-  // iterates (recursively) over a state set for this level and recursively invokes this
-  // mechanism for the current state object for this level; the recursive 'free' function can call
-  // the react() method to modify the current state
-  
+  // WARNING: this may only be instantiated for a `Complex_state`
   template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
   constexpr auto dispatch_event_impl(StateT& state, EventT&& evt) {
-
     using Nested_state_set = typename StateT::template State_set<StateT>;
       
     if (constexpr auto state_idx = get_state_idx_v<NestedStateT, Nested_state_set>;
@@ -129,29 +124,31 @@ namespace uhsm::helpers
       // the event could not be handled at more nested hierarchy level; try to handle it
       // at this level
           
-      // NOTE: check if search could return a default-constructed object of the next state
-      // so it could be immediately assigned to a variant
       const auto next_state_idx = Next_state_search<Nested_state_set, EventT, typename StateT::Transitions>
         ::search(state.state_data.index(), std::forward<EventT>(evt));
           
       if (next_state_idx == invalid_state_idx_) {
         // the event cannot be handled at this level (no matching entry in the transition table)
+        
+        // NOTE: as processing of the event is deferred to higher hierarchy level the current state
+        // for this level is reset to the initial one
+        using Initial = typename StateT::template Initial<StateT>;
+        state.state_data = Initial{};
+          
         return false;
       }
-          
-      // TODO: write a function taking a compile-time state set and runtime index, iterates over
-      // a set of nested states (StateSet) and returns a variant object holding default-constructed
-      // i-th alternative; use it to switch state during state transition 
+        
+      state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
+        
+      return true;
     }
       
     if constexpr (sizeof...(NestedStateTs) > 0) {
       return dispatch_event_impl<StateT, EventT, NestedStateTs...>(state, std::forward<EventT>(evt));
-    } else {
-      // ERROR: this will not compile; `NestedStateTs` parameter pack is empty when checking
-      // the last nested state (a valid case)
-      
-      // cannot reach here; every state hierarchy level must have a current state at any given time
-      assert(false);
+    } else {   
+      // WARNING: cannot reach here; every state hierarchy level must have a current state at any given time
+      // TODO: implement exception handling
+      return false;
     }
   }
   
