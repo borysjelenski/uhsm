@@ -19,6 +19,8 @@ struct Player : uhsm::Statechart<Player> {
       Transition<Paused, Event::Play_pause_pressed, Playing>,
       Transition<Playing, Event::Play_pause_pressed, Paused>
     >;
+    
+    State_data_def<Transitions> state_data;
   };
   
   using Initial = Off;
@@ -26,6 +28,8 @@ struct Player : uhsm::Statechart<Player> {
     Transition<Off, Event::Power_pressed, On>,
     Transition<On, Event::Power_pressed, Off>
   >;
+  
+  State_data_def<Transitions> state_data;
 };
 
 struct Device : uhsm::Statechart<Device>
@@ -44,6 +48,8 @@ struct Device : uhsm::Statechart<Device>
     Transition<Enabled, Turn_on, Enabled>,
     Transition<Enabled, Turn_off, Disabled>
   >;
+  
+  State_data_def<Transitions> state_data;
 };
 
 int main()
@@ -52,6 +58,7 @@ int main()
 //  player_sc.react(Event::Power_pressed{});
   
   Device dev_sc;
+  dev_sc.start();
   dev_sc.react(Device::Turn_off{});
   dev_sc.react(Device::Turn_on{});
 }

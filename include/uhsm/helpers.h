@@ -69,6 +69,13 @@ namespace uhsm::helpers
   template<typename StateSetT, typename TransitionT>
   inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>, StateSetT>;
   
+  // TODO: the event dispatcher and the dispatch event impl. must be renamed
+  // as they do NOT actually dispatch anything; they perform a transition table
+  // lookup for suitable transition for a given event at given nesting level;
+  // a dispatch mechanism is meant to dispatch the event down the state hierarchy
+  // to the most nested state and while unwinding the recursion try to perform
+  // a transition at each level
+  
   template<typename StateSetT, typename EventT, typename TransitionT, typename... TransitionTs>
   constexpr auto dispatch_event_impl(size_t current_state_idx, EventT&& evt)
   {
@@ -93,6 +100,11 @@ namespace uhsm::helpers
       return dispatch_event_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
     }
   };
+  
+  // TODO: write a 'true' dispatching mechanism that for a given hierarchy (nesting) level
+  // iterates (recursively) over a state set for this level and recursively invokes this
+  // mechanism for the current state object for this level; the recursive 'free' function can call
+  // the react() method to modify the current state
     
   template<typename TransitionTableT>
   using get_state_data_def_t = utils::apply_func_t<std::variant, helpers::extract_state_set_t<TransitionTableT>>;
