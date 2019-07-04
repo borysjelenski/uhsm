@@ -76,6 +76,7 @@ namespace uhsm
       auto& state_data = (static_cast<T&>(*this)).state_data;
       state_data = Initial<T>{};
       
+      // TODO: simplify by using type-oriented std::get()
       constexpr auto initial_state_idx = helpers::get_state_idx_v<Initial<T>, State_set<T>>;
       assert(state_data.index() == initial_state_idx);
       std::get<initial_state_idx>(state_data).start();

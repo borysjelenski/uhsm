@@ -1,8 +1,11 @@
 #ifndef UHSM_UTILS_H_
 #define UHSM_UTILS_H_
 
+#include <cassert>
 #include <type_traits>
 #include <tuple>
+#include <variant>
+#include <utility>
 #include "uhsm/fwd.h"
 
 namespace uhsm::utils
@@ -73,6 +76,21 @@ namespace uhsm::utils
   template<typename AddedT, typename TupleT>
   using prepend_t = typename prepend<AddedT, TupleT>::type;
   
+  // gets index of a type in a tuple's type list
+  template<size_t N, typename MatchT, typename TupleT>
+  struct tuple_elem_idx_impl;
+  template<size_t N, typename MatchT, typename... TailTs>
+  struct tuple_elem_idx_impl<N, MatchT, std::tuple<MatchT, TailTs...>>  {
+    static constexpr size_t value = N;
+  };
+  template<size_t N, typename MatchT, typename HeadT, typename... TailTs>
+  struct tuple_elem_idx_impl<N, MatchT, std::tuple<HeadT, TailTs...>> {
+    static constexpr size_t value = tuple_elem_idx_impl<N + 1, MatchT, std::tuple<TailTs...>>::value;
+  };
+  
+  template<typename MatchT, typename TupleT>
+  inline constexpr size_t tuple_elem_idx_v = tuple_elem_idx_impl<0, MatchT, TupleT>::value;
+  
   template<typename TupleT>
   struct flatten_by_1st;  
   template<typename MatchT, typename... OtherTs, typename... TailTupleTs>
@@ -96,6 +114,38 @@ namespace uhsm::utils
   
   template<template<class...> class Func, typename TupleT>
   using apply_func_t = typename apply_func<Func, TupleT>::type;
+  
+  template<typename TupleT>
+  using variant_from_tuple_ts = apply_func_t<std::variant, TupleT>;
+  
+  template<typename TupleT, typename HeadT, typename... TailTs>
+  constexpr auto make_variant_by_index_impl(size_t idx)
+  {
+    using Variant_type = variant_from_tuple_ts<TupleT>;
+    
+    if (tuple_elem_idx_v<HeadT, TupleT> == idx) {
+      return Variant_type{HeadT{}};
+    }
+    
+    if constexpr(sizeof...(TailTs) > 0) {
+      return make_variant_by_index_impl<TupleT, TailTs...>(idx);
+    } else {
+      // WARNING: passing an out-of-bounds index will result in returning a variant
+      // with first alt. type
+      // TODO: implement an error-handling mechanism
+      return Variant_type{};
+    }  
+  }
+  
+  template<typename TupleT>
+  struct Variant_by_index;
+  template<typename HeadT, typename... TailTs>
+  struct Variant_by_index<std::tuple<HeadT, TailTs...>> {
+    static constexpr auto make(size_t idx)
+    {
+      return make_variant_by_index_impl<std::tuple<HeadT, TailTs...>, HeadT, TailTs...>(idx);
+    }
+  };
   
   // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
@@ -165,6 +215,17 @@ namespace uhsm::utils
     static_assert(std::is_same_v<New_tuple, std::tuple<A, B, C>>);
   }
   
+  namespace TestTupleElemIdx_SimpleTuple_ReturnTypeIndex
+  {
+    struct A {};
+    struct B {};
+    struct C {};
+    using Test_tuple = std::tuple<A, B, C>;
+    static_assert(tuple_elem_idx_v<A, Test_tuple> == 0);
+    static_assert(tuple_elem_idx_v<B, Test_tuple> == 1);
+    static_assert(tuple_elem_idx_v<C, Test_tuple> == 2);
+  }
+  
   namespace TestFlattenBy1St_NestedTuple_ReturnFlatTupleWith1StType
   {
     struct A {};
@@ -193,6 +254,24 @@ namespace uhsm::utils
     >;
     using State_tuple = flatten_by_1st_t<Table>;
     static_assert(std::is_same_v<State_tuple, std::tuple<StateA, StateB, StateC>>);
+  }
+  
+  namespace TestMakeVariantByIndex_InBoundIndex_MakeVariantWithIthAlt
+  {
+    struct A {};
+    struct B {};
+    struct C {};
+    constexpr auto variant_a = Variant_by_index<std::tuple<A, B, C>>::make(0);
+    constexpr auto variant_b = Variant_by_index<std::tuple<A, B, C>>::make(1);
+    constexpr auto variant_c = Variant_by_index<std::tuple<A, B, C>>::make(2);
+       
+    using Expected_variant = const std::variant<A, B, C>;
+    static_assert(std::is_same_v<decltype(variant_a), Expected_variant>);
+    static_assert(std::is_same_v<decltype(variant_b), Expected_variant>);
+    static_assert(std::is_same_v<decltype(variant_c), Expected_variant>);
+    static_assert(variant_a.index() == 0);
+    static_assert(variant_b.index() == 1);
+    static_assert(variant_c.index() == 2);
   }
 }
 

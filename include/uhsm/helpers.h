@@ -76,28 +76,32 @@ namespace uhsm::helpers
   // to the most nested state and while unwinding the recursion try to perform
   // a transition at each level
   
+  constexpr auto invalid_state_idx_ = std::numeric_limits<size_t>::max();
+  
   template<typename StateSetT, typename EventT, typename TransitionT, typename... TransitionTs>
-  constexpr auto search_next_state(size_t current_state_idx, EventT&& evt)
+  constexpr auto search_next_state_impl(size_t current_state_idx, EventT&& evt)
   {
-    if constexpr (sizeof...(TransitionTs) > 0) {
-      if (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
-        std::is_same_v<get_tr_event<TransitionT>, EventT>) {
-        return get_tr_dest_state_idx_v<StateSetT, TransitionT>;
-      }
-      
-      return search_next_state<StateSetT, EventT, TransitionTs...>(current_state_idx, std::forward<EventT>(evt));
+    if (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
+      std::is_same_v<get_tr_event<TransitionT>, EventT>) {
+      return get_tr_dest_state_idx_v<StateSetT, TransitionT>;
     }
     
-    return std::numeric_limits<size_t>::max();
+    if constexpr (sizeof...(TransitionTs) > 0) {
+      return search_next_state_impl<StateSetT, EventT, TransitionTs...>(current_state_idx, std::forward<EventT>(evt));
+    } else {
+      return invalid_state_idx_;
+    }
   }
   
   template<typename StateSetT, typename EventT, typename TransitionTableT>
   struct Next_state_search;
   template<typename StateSetT, typename EventT, typename HeadTrT, typename... TailTrTs>
   struct Next_state_search<StateSetT, EventT, uhsm::Transition_table<HeadTrT, TailTrTs...>> {
+    static constexpr auto invalid_state_idx = helpers::invalid_state_idx_;
+    
     static constexpr auto search(size_t current_state_idx, EventT&& evt)
     {
-      return search_next_state<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
+      return search_next_state_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
     }
   };
   
@@ -105,6 +109,56 @@ namespace uhsm::helpers
   // iterates (recursively) over a state set for this level and recursively invokes this
   // mechanism for the current state object for this level; the recursive 'free' function can call
   // the react() method to modify the current state
+  
+  template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
+  constexpr auto dispatch_event_impl(StateT& state, EventT&& evt) {
+
+    using Nested_state_set = typename StateT::template State_set<StateT>;
+      
+    if (constexpr auto state_idx = get_state_idx_v<NestedStateT, Nested_state_set>;
+      state_idx == state.state_data.index()) {
+      // current state for this state hierarchy level found; dispatch the event to it by calling `react()`
+      auto& current_nested_state = std::get<state_idx>(state.state_data);
+          
+      // NOTE: a call to `react()` can be replaced with a call to `dispatch_event_impl()` 
+      if (current_nested_state.react(std::forward<EventT>(evt))) {
+        // the event was handled; end of processing
+        return true;
+      }
+          
+      // the event could not be handled at more nested hierarchy level; try to handle it
+      // at this level
+          
+      // NOTE: check if search could return a default-constructed object of the next state
+      // so it could be immediately assigned to a variant
+      const auto next_state_idx = Next_state_search<Nested_state_set, EventT, typename StateT::Transitions>
+        ::search(state.state_data.index(), std::forward<EventT>(evt));
+          
+      if (next_state_idx == invalid_state_idx_) {
+        // the event cannot be handled at this level (no matching entry in the transition table)
+        return false;
+      }
+          
+      // TODO: write a function taking a compile-time state set and runtime index, iterates over
+      // a set of nested states (StateSet) and returns a variant object holding default-constructed
+      // i-th alternative; use it to switch state during state transition 
+    }
+      
+    if constexpr (sizeof...(NestedStateTs) > 0) {
+      return dispatch_event_impl<StateT, EventT, NestedStateTs...>(state, std::forward<EventT>(evt));
+    } else {
+      // ERROR: this will not compile; `NestedStateTs` parameter pack is empty when checking
+      // the last nested state (a valid case)
+      
+      // cannot reach here; every state hierarchy level must have a current state at any given time
+      assert(false);
+    }
+  }
+  
+  template<typename StateT, typename EventT>
+  struct Event_dispatcher {
+    
+  };
     
   template<typename TransitionTableT>
   using get_state_data_def_t = utils::apply_func_t<std::variant, helpers::extract_state_set_t<TransitionTableT>>;
