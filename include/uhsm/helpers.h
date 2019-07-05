@@ -208,7 +208,7 @@ namespace uhsm::helpers
     >;
   }
   
-  namespace TestHasTrWSrcState_DoesNotContain_ReturnFalse
+  namespace Test::HasTrWSrcState_DoesNotContain_ReturnFalse
   {
     struct Unknown_state {};
     using Tested_tr = uhsm::Transition<Unknown_state, Test_data::Pwr_btn_pressed, Test_data::On>;
@@ -216,7 +216,7 @@ namespace uhsm::helpers
     static_assert(std::is_same_v <Bool_contains, std::false_type>);
   }
   
-  namespace TestHasTrWSrcState_DoesContain_ReturnTrue
+  namespace Test::HasTrWSrcState_DoesContain_ReturnTrue
   {
     struct Unknown_state {};
     // NOTE: it does not matter that the transition table does not have a transition
@@ -226,7 +226,7 @@ namespace uhsm::helpers
     static_assert(std::is_same_v <Bool_contains, std::true_type>);
   }
   
-  namespace TestAddUniqueTrWSrcState_AddAlreadyPresent_TableUnchanged
+  namespace Test::AddUniqueTrWSrcState_AddAlreadyPresent_TableUnchanged
   {
     using New_transition = uhsm::Transition<Test_data::Off, Test_data::Brownout, Test_data::Off>;
     using New_table = add_unique_tr_w_src_state_t<New_transition, Test_data::Transitions>;
@@ -235,7 +235,7 @@ namespace uhsm::helpers
     static_assert(std::is_same_v<New_table, Test_data::Transitions>);
   }
   
-  namespace TestAddUniqueTrWSrcState_AddNotPresent_TransitionAdded
+  namespace Test::AddUniqueTrWSrcState_AddNotPresent_TransitionAdded
   {
     struct New_state {};
     using New_transition = uhsm::Transition<New_state, Test_data::Brownout, Test_data::Off>;
@@ -249,7 +249,7 @@ namespace uhsm::helpers
     static_assert(std::is_same_v<New_table, Expected_table>);
   }
   
-  namespace TestRmDuplTrBySrc_NoDupl_TableUnchanged
+  namespace Test::RmDuplTrBySrc_NoDupl_TableUnchanged
   {
     struct StateA {};
     struct StateB {};
@@ -262,7 +262,7 @@ namespace uhsm::helpers
     static_assert(std::is_same_v<New_table, No_dupl_table>);
   }
   
-  namespace TestRmDuplTrBySrc_DuplPresent_DuplRemoved
+  namespace Test::RmDuplTrBySrc_DuplPresent_DuplRemoved
   {
     struct StateA {};
     struct StateB {};
@@ -290,7 +290,7 @@ namespace uhsm::helpers
     static_assert(std::is_same_v<New_table, Expected_table>);
   }
   
-  namespace TestStateData_TransitionTablePassed_ReturnStateData
+  namespace Test::StateData_TransitionTablePassed_ReturnStateData
   {
     struct StateA {};
     struct StateB {};

@@ -150,7 +150,7 @@ namespace uhsm::utils
   // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
   
-  namespace Common
+  namespace Test_data
   {
     using Basic_tuple = std::tuple<bool, int, float>;
     // NOTE: duplicate types occur both adjacently and non-adjacently on the parameter list
@@ -170,43 +170,43 @@ namespace uhsm::utils
     >;
   }
   
-  namespace TestContains_DoContain_ReturnTrue
+  namespace Test::Contains_DoContain_ReturnTrue
   {
-    using Bool_contains = contains_t<int, Common::Basic_tuple>;
+    using Bool_contains = contains_t<int, Test_data::Basic_tuple>;
     static_assert(std::is_same_v<Bool_contains, std::true_type>);
   }
   
-  namespace TestContains_DoNotContain_ReturnFalse
+  namespace Test::Contains_DoNotContain_ReturnFalse
   {
-    using Bool_contains = contains_t<char, Common::Basic_tuple>;
+    using Bool_contains = contains_t<char, Test_data::Basic_tuple>;
     static_assert(std::is_same_v<Bool_contains, std::false_type>);
   }
   
-  namespace TestAddUnique_AddAlreadyPresent_TupleUnchanged
+  namespace Test::AddUnique_AddAlreadyPresent_TupleUnchanged
   {
-    using New_tuple = add_unique_t<float, Common::Basic_tuple>;
-    static_assert(std::is_same_v<New_tuple, Common::Basic_tuple>);
+    using New_tuple = add_unique_t<float, Test_data::Basic_tuple>;
+    static_assert(std::is_same_v<New_tuple, Test_data::Basic_tuple>);
   }
   
-  namespace TestAddUnique_AddNotPresent_AddedAtHead
+  namespace Test::AddUnique_AddNotPresent_AddedAtHead
   {
-    using New_tuple = add_unique_t<char, Common::Basic_tuple>;
+    using New_tuple = add_unique_t<char, Test_data::Basic_tuple>;
     static_assert(std::is_same_v<New_tuple, std::tuple<char, bool, int, float>>);
   }
   
-  namespace TestRemoveDuplicates_NoDuplicates_TupleUnchanged
+  namespace Test::RemoveDuplicates_NoDuplicates_TupleUnchanged
   {
-    using New_tuple = remove_duplicates_t<Common::Basic_tuple>;
-    static_assert(std::is_same_v<New_tuple, Common::Basic_tuple>);
+    using New_tuple = remove_duplicates_t<Test_data::Basic_tuple>;
+    static_assert(std::is_same_v<New_tuple, Test_data::Basic_tuple>);
   }
   
-  namespace TestRemoveDuplicates_DuplicatesPresent_DuplicatesRemoved
+  namespace Test::RemoveDuplicates_DuplicatesPresent_DuplicatesRemoved
   {
-    using New_tuple = remove_duplicates_t<Common::Tuple_w_duplicates>;
+    using New_tuple = remove_duplicates_t<Test_data::Tuple_w_duplicates>;
     static_assert(std::is_same_v<New_tuple, std::tuple<char, int, bool, float>>);
   }
   
-  namespace TestPrepend_PrependNewType_ReturnPrepended
+  namespace Test::Prepend_PrependNewType_ReturnPrepended
   {
     struct A {};
     struct B {};
@@ -215,7 +215,7 @@ namespace uhsm::utils
     static_assert(std::is_same_v<New_tuple, std::tuple<A, B, C>>);
   }
   
-  namespace TestTupleElemIdx_SimpleTuple_ReturnTypeIndex
+  namespace Test::TupleElemIdx_SimpleTuple_ReturnTypeIndex
   {
     struct A {};
     struct B {};
@@ -226,7 +226,7 @@ namespace uhsm::utils
     static_assert(tuple_elem_idx_v<C, Test_tuple> == 2);
   }
   
-  namespace TestFlattenBy1St_NestedTuple_ReturnFlatTupleWith1StType
+  namespace Test::FlattenBy1St_NestedTuple_ReturnFlatTupleWith1StType
   {
     struct A {};
     struct B {};
@@ -240,7 +240,7 @@ namespace uhsm::utils
     static_assert(std::is_same_v<Flat_tuple, std::tuple<A, B, C>>);
   }
   
-  namespace TestFlattenBy1St_TransitionTable_ReturnStateTuple
+  namespace Test::FlattenBy1St_TransitionTable_ReturnStateTuple
   {
     struct StateA {};
     struct StateB {};
@@ -256,7 +256,7 @@ namespace uhsm::utils
     static_assert(std::is_same_v<State_tuple, std::tuple<StateA, StateB, StateC>>);
   }
   
-  namespace TestMakeVariantByIndex_InBoundIndex_MakeVariantWithIthAlt
+  namespace Test::MakeVariantByIndex_InBoundIndex_MakeVariantWithIthAlt
   {
     struct A {};
     struct B {};
