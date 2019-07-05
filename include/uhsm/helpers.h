@@ -69,6 +69,29 @@ namespace uhsm::helpers
   template<typename StateSetT, typename TransitionT>
   inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>, StateSetT>;
   
+  template<typename StateDataT, size_t N, typename HeadT, typename... TailTs> 
+  constexpr void reset_substate_data_impl(StateDataT& state_data, size_t substate_idx)
+  {
+    if (substate_idx == N) {
+      std::get<N>(state_data).reset();  
+      return;
+    }
+    
+    if constexpr (sizeof...(TailTs) > 0) {
+      return reset_substate_data_impl<StateDataT, N + 1, TailTs...>(state_data, substate_idx);
+    }
+  }
+  
+  template<typename StateDataT>
+  struct Substate_data_reset;
+  template<typename HeadT, typename... TailTs>
+  struct Substate_data_reset<std::variant<HeadT, TailTs...>> {
+    static constexpr void reset(std::variant<HeadT, TailTs...>& state_data, size_t substate_idx)
+    {
+      reset_substate_data_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
+    }
+  };
+  
   // TODO: the event dispatcher and the dispatch event impl. must be renamed
   // as they do NOT actually dispatch anything; they perform a transition table
   // lookup for suitable transition for a given event at given nesting level;
@@ -148,7 +171,19 @@ namespace uhsm::helpers
         return false;
       }
         
+      if (next_state_idx == state.state_data.index()) {
+        // this is an internal transition (source state and destination state are the same);
+        // do not change the state data in any way
+        
+        // TODO: execute action handler
+        
+        return true;
+      }
+        
       state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
+      // recursively set initial state for the new current substate (otherwise, substates remain
+      // their variant type's first alternative)
+      Substate_data_reset<decltype(state.state_data)>::reset(state.state_data, state.state_data.index());
         
       return true;
     }
