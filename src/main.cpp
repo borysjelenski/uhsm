@@ -54,12 +54,23 @@ struct Device : uhsm::Statechart<Device>
 
 int main()
 {
-  Player player_sc;
-  player_sc.react(Event::Power_pressed{});
+  Player sc;
+  sc.reset();
+  sc.react(Event::Power_pressed{});
+  sc.react(Event::Play_pause_pressed{});
+  sc.react(Event::Play_pause_pressed{});
+  sc.react(Event::Play_pause_pressed{});
+  sc.react(Event::Power_pressed{});
+  sc.react(Event::Power_pressed{});
+  sc.react(Event::Power_pressed{});
+  
+  printf("%d", sc.state_data.index());
   
   Device dev_sc;
-  dev_sc.start();
+  dev_sc.reset();
   dev_sc.react(Device::Turn_off{});
   dev_sc.react(Device::Turn_on{});
+  
+  printf("%d", dev_sc.state_data.index());
 }
  

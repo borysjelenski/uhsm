@@ -132,8 +132,18 @@ namespace uhsm::helpers
         
         // NOTE: as processing of the event is deferred to higher hierarchy level the current state
         // for this level is reset to the initial one
-        using Initial = typename StateT::Initial;
-        state.state_data = Initial{};
+        
+        // ERROR: resetting state variant to initial state will cause all the underlying
+        // variants to be reset their FIRST alternative (NOT neccesarily the initial state);
+        // this can be solved by calling start() on the state instead of setting variant
+        // to initital state - this however causes additional recursive calls
+        
+//        using Initial = typename StateT::Initial;
+//        state.state_data = Initial{};
+        
+        // NOTE: check if recursive start() can be replaced with the aid
+        // of additional state index outside variant
+        state.reset();
           
         return false;
       }
@@ -157,7 +167,7 @@ namespace uhsm::helpers
   template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
   struct Event_dispatcher<StateT, EventT, std::tuple<NestedStateT, NestedStateTs...>> {
     static constexpr auto dispatch(StateT& state, EventT && event) {
-      dispatch_event_impl<StateT, EventT, NestedStateT, NestedStateTs...>(
+      return dispatch_event_impl<StateT, EventT, NestedStateT, NestedStateTs...>(
         state, std::forward<EventT>(event));
     }
   };

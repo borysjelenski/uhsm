@@ -21,7 +21,7 @@ namespace uhsm
   struct Simple_state {
     using Parent = ParentStateT;
     
-    void start()
+    void reset()
     {
       // NOTE: nothing to be initialized in a simple state
       return;
@@ -57,12 +57,7 @@ namespace uhsm
     template<typename U>
     using Initial = typename Derived_traits<U>::Initial;
     
-    Complex_state()
-      : curr_state_idx{helpers::get_state_idx_v<Initial<T>, State_set<T>>}
-    {
-    }
-    
-    void start()
+    void reset()
     {
       // WARNING: this member function MUST be called by the user on topmost
       // state machine object BEFORE any events are passed to it;
@@ -79,18 +74,18 @@ namespace uhsm
       // TODO: simplify by using type-oriented std::get()
       constexpr auto initial_state_idx = helpers::get_state_idx_v<Initial<T>, State_set<T>>;
       assert(state_data.index() == initial_state_idx);
-      std::get<initial_state_idx>(state_data).start();
+      std::get<initial_state_idx>(state_data).reset();
     }
     
     template<typename EventT>
     bool react(EventT&& evt)
     {
       auto& derived = static_cast<T&>(*this); 
-      helpers::Event_dispatcher<T, EventT, State_set<T>>::dispatch(derived, std::forward<EventT>(evt));
+      const bool handled = helpers::Event_dispatcher<T, EventT, State_set<T>>::dispatch(
+        derived, std::forward<EventT>(evt));
+      
+      return handled;
     }
-    
-    // DEBUG: not used anymore; current state indicated by the internal variant's index
-    size_t curr_state_idx;
   };
   
   struct No_parent_state {};
