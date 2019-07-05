@@ -27,7 +27,6 @@ namespace uhsm::helpers
   template<typename MatchStateT, typename TransitionTableT>
   using has_tr_w_src_state_t = typename has_tr_w_src_state<MatchStateT, TransitionTableT>::type;
   
-  // TODO: rename to `add_unique_tr_by_src`
   template<typename TransitionT, typename TransitionTableT>
   using add_unique_tr_w_src_state_t = typename utils::add_unique<has_tr_w_src_state, TransitionT, TransitionTableT>::type;
   
@@ -91,14 +90,7 @@ namespace uhsm::helpers
       reset_substate_data_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
     }
   };
-  
-  // TODO: the event dispatcher and the dispatch event impl. must be renamed
-  // as they do NOT actually dispatch anything; they perform a transition table
-  // lookup for suitable transition for a given event at given nesting level;
-  // a dispatch mechanism is meant to dispatch the event down the state hierarchy
-  // to the most nested state and while unwinding the recursion try to perform
-  // a transition at each level
-  
+    
   constexpr auto invalid_state_idx_ = std::numeric_limits<size_t>::max();
   
   template<typename StateSetT, typename EventT, typename TransitionT, typename... TransitionTs>
@@ -128,7 +120,6 @@ namespace uhsm::helpers
     }
   };
   
-  // WARNING: this may only be instantiated for a `Complex_state`
   template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
   constexpr auto dispatch_event_impl(StateT& state, EventT&& evt) {
     using Nested_state_set = typename StateT::template State_set<StateT>;
@@ -138,13 +129,12 @@ namespace uhsm::helpers
       // current state for this state hierarchy level found; dispatch the event to it by calling `react()`
       auto& current_nested_state = std::get<state_idx>(state.state_data);
           
-      // NOTE: a call to `react()` can be replaced with a call to `dispatch_event_impl()` 
       if (current_nested_state.react(std::forward<EventT>(evt))) {
         // the event was handled; end of processing
         return true;
       }
           
-      // the event could not be handled at more nested hierarchy level; try to handle it
+      // NOTE: the event could not be handled at more nested hierarchy level; try to handle it
       // at this level
           
       const auto next_state_idx = Next_state_search<Nested_state_set, EventT, typename StateT::Transitions>
@@ -152,22 +142,10 @@ namespace uhsm::helpers
           
       if (next_state_idx == invalid_state_idx_) {
         // the event cannot be handled at this level (no matching entry in the transition table)
-        
         // NOTE: as processing of the event is deferred to higher hierarchy level the current state
-        // for this level is reset to the initial one
+        // for this level is recursively reset to the initial one
         
-        // ERROR: resetting state variant to initial state will cause all the underlying
-        // variants to be reset their FIRST alternative (NOT neccesarily the initial state);
-        // this can be solved by calling start() on the state instead of setting variant
-        // to initital state - this however causes additional recursive calls
-        
-//        using Initial = typename StateT::Initial;
-//        state.state_data = Initial{};
-        
-        // NOTE: check if recursive start() can be replaced with the aid
-        // of additional state index outside variant
-        state.reset();
-          
+        state.reset();          
         return false;
       }
         
