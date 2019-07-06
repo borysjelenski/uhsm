@@ -62,6 +62,8 @@ namespace uhsm::helpers
   using get_tr_event = std::tuple_element_t<1, TransitionT>;
   template<typename TransitionT>
   using get_tr_dest_state = std::tuple_element_t<2, TransitionT>;
+  template<typename TransitionT>
+  using get_tr_action = std::tuple_element_t<3, TransitionT>;
   
   template<typename StateSetT, typename TransitionT>
   inline constexpr size_t get_tr_src_state_idx_v = get_state_idx_v<get_tr_src_state<TransitionT>, StateSetT>;
@@ -98,6 +100,10 @@ namespace uhsm::helpers
   {
     if (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
       std::is_same_v<get_tr_event<TransitionT>, EventT>) {
+      // execute action
+      get_tr_action<TransitionT> action;
+      action(std::forward<EventT>(evt));
+        
       return get_tr_dest_state_idx_v<StateSetT, TransitionT>;
     }
     
@@ -145,7 +151,7 @@ namespace uhsm::helpers
         // NOTE: as processing of the event is deferred to higher hierarchy level the current state
         // for this level is recursively reset to the initial one
         
-        state.reset();          
+        state.reset();
         return false;
       }
         

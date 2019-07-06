@@ -14,10 +14,20 @@ struct Player : uhsm::Statechart<Player> {
       unsigned int playback_dur;
     };
     
+    struct Start_playback {
+      template<typename EventT>
+      void operator()(EventT&& evt) {}
+    };
+    
+    struct Stop_playback {
+      template<typename EventT>
+      void operator()(EventT&& evt) {}
+    };
+    
     using Initial = Paused;
     using Transitions = Transition_table<
-      Transition<Paused, Event::Play_pause_pressed, Playing>,
-      Transition<Playing, Event::Play_pause_pressed, Paused>
+      Transition<Paused, Event::Play_pause_pressed, Playing, Start_playback>,
+      Transition<Playing, Event::Play_pause_pressed, Paused, Stop_playback>
     >;
     
     State_data_def<Transitions> state_data;

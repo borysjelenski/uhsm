@@ -43,8 +43,9 @@ namespace uhsm
     using Simple_state = uhsm::Simple_state<U, Complex_state<T, Parent>>; 
     template<typename U>
     using State = uhsm::Complex_state<U, Complex_state<T, Parent>>;
-    template<typename SrcStateT, typename EventT, typename DestStateT>
-    using Transition = uhsm::Transition<SrcStateT, EventT, DestStateT>;
+    template<typename SrcStateT, typename EventT, typename DestStateT,
+      typename ActionT = uhsm::Empty_action>
+    using Transition = uhsm::Transition<SrcStateT, EventT, DestStateT, ActionT>;
     template<typename... TransitionsT>
     using Transition_table = uhsm::Transition_table<TransitionsT...>;
     template<typename TransitionTableT>

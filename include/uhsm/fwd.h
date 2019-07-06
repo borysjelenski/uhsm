@@ -9,6 +9,11 @@ namespace uhsm
   using Transition = std::tuple<ElemTs...>;
   template<typename... TransitionsT>
   using Transition_table = std::tuple<TransitionsT...>;
+  
+  struct Empty_action {
+    template<typename EventT>
+    void operator()(EventT&&) {}
+  };
 }
 
 #endif
