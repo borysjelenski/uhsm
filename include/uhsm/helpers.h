@@ -157,8 +157,6 @@ namespace uhsm::helpers
         // this is an internal transition (source state and destination state are the same);
         // do not change the state data in any way
         
-        // TODO: execute action handler
-        
         return true;
       }
         
