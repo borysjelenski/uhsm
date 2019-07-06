@@ -83,6 +83,19 @@ namespace uhsm::helpers
     }
   }
   
+  template<typename StateDataT, size_t N, typename HeadT, typename... TailTs>
+  constexpr void invoke_substate_entry_impl(StateDataT& state_data, size_t substate_idx)
+  {
+    if (substate_idx == N) {
+      std::get<N>(state_data).on_entry();  
+      return;
+    }
+    
+    if constexpr (sizeof...(TailTs) > 0) {
+      return invoke_substate_entry_impl<StateDataT, N + 1, TailTs...>(state_data, substate_idx);
+    }
+  }
+  
   template<typename StateDataT>
   struct Substate_data_init;
   template<typename HeadT, typename... TailTs>
@@ -92,6 +105,20 @@ namespace uhsm::helpers
       init_substate_data_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
     }
   };
+  
+  template<typename StateDataT>
+  struct Substate_entry_invocation;
+  template<typename HeadT, typename... TailTs>
+  struct Substate_entry_invocation<std::variant<HeadT, TailTs...>> {
+    static constexpr void invoke(std::variant<HeadT, TailTs...>& state_data, size_t substate_idx)
+    {
+      invoke_substate_entry_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
+    }
+  };
+  
+  // WARNING: code repetition between `init_substate_data_impl` and `invoke_substate_entry_impl`
+  // TODO: write a generic template that invokes a member function on variant's alternative object
+  // whose index is passed at runtime
     
   constexpr auto invalid_state_idx_ = std::numeric_limits<size_t>::max();
   
@@ -156,17 +183,16 @@ namespace uhsm::helpers
       if (next_state_idx == invalid_state_idx_) {
         // the event cannot be handled at this level (no matching entry in the transition table);
         // defer processing of the event to a higher hierarchy level
-
-        // TODO: execute on_exit
         
         return false;
       }
       
-      // at this point it is known that at this level a state branch switch occurs (as this is not
-      // an internal transition)
+      // at this point it is known that at this level a state branch switch occurs
       // TODO: recursively call on_exit on all nested states (in LIFO order) before switching to a new state
       
       state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
+      // invoke `on_entry()` for new current state
+      Substate_entry_invocation<decltype(state.state_data)>::invoke(state.state_data, state.state_data.index());
       // recursively set initial state for the new current substate (otherwise, substates remain
       // at their variant type's first alternative)
       Substate_data_init<decltype(state.state_data)>::init(state.state_data, state.state_data.index());
