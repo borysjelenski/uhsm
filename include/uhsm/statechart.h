@@ -21,7 +21,7 @@ namespace uhsm
   struct Simple_state {
     using Parent = ParentStateT;
     
-    void reset()
+    void initialize()
     {
       // NOTE: nothing to be initialized in a simple state
       return;
@@ -58,7 +58,7 @@ namespace uhsm
     template<typename U>
     using Initial = typename Derived_traits<U>::Initial;
     
-    void reset()
+    void initialize()
     {
       // WARNING: this member function MUST be called by the user on topmost
       // state machine object BEFORE any events are passed to it;
@@ -72,10 +72,12 @@ namespace uhsm
       auto& state_data = (static_cast<T&>(*this)).state_data;
       state_data = Initial<T>{};
       
+      // TODO: execute on_entry in FIFO order
+      
       // TODO: simplify by using type-oriented std::get()
       constexpr auto initial_state_idx = helpers::get_state_idx_v<Initial<T>, State_set<T>>;
       assert(state_data.index() == initial_state_idx);
-      std::get<initial_state_idx>(state_data).reset();
+      std::get<initial_state_idx>(state_data).initialize();
     }
     
     template<typename EventT>

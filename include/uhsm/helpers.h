@@ -71,25 +71,25 @@ namespace uhsm::helpers
   inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>, StateSetT>;
   
   template<typename StateDataT, size_t N, typename HeadT, typename... TailTs> 
-  constexpr void reset_substate_data_impl(StateDataT& state_data, size_t substate_idx)
+  constexpr void init_substate_data_impl(StateDataT& state_data, size_t substate_idx)
   {
     if (substate_idx == N) {
-      std::get<N>(state_data).reset();  
+      std::get<N>(state_data).initialize();  
       return;
     }
     
     if constexpr (sizeof...(TailTs) > 0) {
-      return reset_substate_data_impl<StateDataT, N + 1, TailTs...>(state_data, substate_idx);
+      return init_substate_data_impl<StateDataT, N + 1, TailTs...>(state_data, substate_idx);
     }
   }
   
   template<typename StateDataT>
-  struct Substate_data_reset;
+  struct Substate_data_init;
   template<typename HeadT, typename... TailTs>
-  struct Substate_data_reset<std::variant<HeadT, TailTs...>> {
-    static constexpr void reset(std::variant<HeadT, TailTs...>& state_data, size_t substate_idx)
+  struct Substate_data_init<std::variant<HeadT, TailTs...>> {
+    static constexpr void init(std::variant<HeadT, TailTs...>& state_data, size_t substate_idx)
     {
-      reset_substate_data_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
+      init_substate_data_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
     }
   };
     
@@ -146,13 +146,6 @@ namespace uhsm::helpers
       const auto next_state_idx = Next_state_search<Nested_state_set, EventT, typename StateT::Transitions>
         ::search(state.state_data.index(), std::forward<EventT>(evt));
           
-      if (next_state_idx == invalid_state_idx_) {
-        // the event cannot be handled at this level (no matching entry in the transition table);
-        // defer processing of the event to a higher hierarchy level
-
-        return false;
-      }
-        
       if (next_state_idx == state.state_data.index()) {
         // this is an internal transition (source state and destination state are the same);
         // do not change the state data in any way
@@ -160,10 +153,23 @@ namespace uhsm::helpers
         return true;
       }
         
+      if (next_state_idx == invalid_state_idx_) {
+        // the event cannot be handled at this level (no matching entry in the transition table);
+        // defer processing of the event to a higher hierarchy level
+
+        // TODO: execute on_exit
+        
+        return false;
+      }
+      
+      // at this point it is known that at this level a state branch switch occurs (as this is not
+      // an internal transition)
+      // TODO: recursively call on_exit on all nested states (in LIFO order) before switching to a new state
+      
       state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
       // recursively set initial state for the new current substate (otherwise, substates remain
-      // their variant type's first alternative)
-      Substate_data_reset<decltype(state.state_data)>::reset(state.state_data, state.state_data.index());
+      // at their variant type's first alternative)
+      Substate_data_init<decltype(state.state_data)>::init(state.state_data, state.state_data.index());
         
       return true;
     }
