@@ -147,11 +147,9 @@ namespace uhsm::helpers
         ::search(state.state_data.index(), std::forward<EventT>(evt));
           
       if (next_state_idx == invalid_state_idx_) {
-        // the event cannot be handled at this level (no matching entry in the transition table)
-        // NOTE: as processing of the event is deferred to higher hierarchy level the current state
-        // for this level is recursively reset to the initial one
-        
-        state.reset();
+        // the event cannot be handled at this level (no matching entry in the transition table);
+        // defer processing of the event to a higher hierarchy level
+
         return false;
       }
         
