@@ -74,11 +74,33 @@ namespace uhsm::helpers
     template<typename StateT>
     static void invoke(StateT& state) { state.on_entry(); }
   };
-  
+   
   template<typename StateDataT>
   constexpr void invoke_substate_entry(StateDataT& state_data)
   {
     utils::variant_invocation<On_entry_invocation, StateDataT>::invoke(state_data);
+  }
+  
+  struct On_exit_invocation {
+    template<typename StateT>
+    static void invoke(StateT& state) { state.on_exit(); }
+  };
+  
+  template<typename StateDataT>
+  constexpr void invoke_substate_exit(StateDataT& state_data)
+  {
+    utils::variant_invocation<On_exit_invocation, StateDataT>::invoke(state_data);
+  }
+  
+  struct Recur_private_on_exit_invocation {
+    template<typename StateT>
+    static void invoke(StateT& state) { state.private_invoke_on_exit(); }
+  };
+  
+  template<typename StateDataT>
+  constexpr void invoke_private_exit_recur(StateDataT& state_data)
+  {
+    utils::variant_invocation<Recur_private_on_exit_invocation, StateDataT>::invoke(state_data);
   }
   
   struct Initialize_invocation {
@@ -151,19 +173,20 @@ namespace uhsm::helpers
       if (next_state_idx == state.state_data.index()) {
         // this is an internal transition (source state and destination state are the same);
         // do not change the state data in any way
-        
         return true;
       }
         
       if (next_state_idx == invalid_state_idx_) {
         // the event cannot be handled at this level (no matching entry in the transition table);
         // defer processing of the event to a higher hierarchy level
-        
         return false;
       }
       
-      // at this point it is known that at this level a state branch switch occurs
-      // TODO: recursively call on_exit on all nested states (in LIFO order) before switching to a new state
+      // NOTE: at this point it is known that at this level a state branch switch occurs
+        
+      // recursively call on_exit on all current nested states (in LIFO order)
+      // before switching to a new state branch
+      invoke_private_exit_recur(state.state_data);
         
       state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
       invoke_substate_entry(state.state_data);    

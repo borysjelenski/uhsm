@@ -30,6 +30,12 @@ namespace uhsm
       return;
     }
     
+    void private_invoke_on_exit()
+    {
+      auto& derived = static_cast<T&>(*this); 
+      derived.on_exit();
+    }
+    
     template<typename EventT>
     bool react(EventT&& evt)
     {
@@ -82,7 +88,14 @@ namespace uhsm
       current_state.on_entry();
       current_state.initialize();
     }
-        
+    
+    void private_invoke_on_exit()
+    {
+      auto& derived = static_cast<T&>(*this);
+      helpers::invoke_private_exit_recur(derived.state_data);
+      derived.on_exit();
+    }
+    
     template<typename EventT>
     bool react(EventT&& evt)
     {
