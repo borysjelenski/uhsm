@@ -82,7 +82,7 @@ namespace uhsm
       current_state.on_entry();
       current_state.initialize();
     }
-    
+        
     template<typename EventT>
     bool react(EventT&& evt)
     {

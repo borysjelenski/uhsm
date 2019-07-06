@@ -69,56 +69,28 @@ namespace uhsm::helpers
   inline constexpr size_t get_tr_src_state_idx_v = get_state_idx_v<get_tr_src_state<TransitionT>, StateSetT>;
   template<typename StateSetT, typename TransitionT>
   inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>, StateSetT>;
-  
-  template<typename StateDataT, size_t N, typename HeadT, typename... TailTs> 
-  constexpr void init_substate_data_impl(StateDataT& state_data, size_t substate_idx)
-  {
-    if (substate_idx == N) {
-      std::get<N>(state_data).initialize();  
-      return;
-    }
-    
-    if constexpr (sizeof...(TailTs) > 0) {
-      return init_substate_data_impl<StateDataT, N + 1, TailTs...>(state_data, substate_idx);
-    }
-  }
-  
-  template<typename StateDataT, size_t N, typename HeadT, typename... TailTs>
-  constexpr void invoke_substate_entry_impl(StateDataT& state_data, size_t substate_idx)
-  {
-    if (substate_idx == N) {
-      std::get<N>(state_data).on_entry();  
-      return;
-    }
-    
-    if constexpr (sizeof...(TailTs) > 0) {
-      return invoke_substate_entry_impl<StateDataT, N + 1, TailTs...>(state_data, substate_idx);
-    }
-  }
-  
-  template<typename StateDataT>
-  struct Substate_data_init;
-  template<typename HeadT, typename... TailTs>
-  struct Substate_data_init<std::variant<HeadT, TailTs...>> {
-    static constexpr void init(std::variant<HeadT, TailTs...>& state_data, size_t substate_idx)
-    {
-      init_substate_data_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
-    }
+
+  struct On_entry_invocation {
+    template<typename StateT>
+    static void invoke(StateT& state) { state.on_entry(); }
   };
   
   template<typename StateDataT>
-  struct Substate_entry_invocation;
-  template<typename HeadT, typename... TailTs>
-  struct Substate_entry_invocation<std::variant<HeadT, TailTs...>> {
-    static constexpr void invoke(std::variant<HeadT, TailTs...>& state_data, size_t substate_idx)
-    {
-      invoke_substate_entry_impl<std::variant<HeadT, TailTs...>, 0, HeadT, TailTs...>(state_data, substate_idx);
-    }
+  constexpr void invoke_substate_entry(StateDataT& state_data)
+  {
+    utils::variant_invocation<On_entry_invocation, StateDataT>::invoke(state_data);
+  }
+  
+  struct Initialize_invocation {
+    template<typename StateT>
+    static void invoke(StateT& state) { state.initialize(); }
   };
   
-  // WARNING: code repetition between `init_substate_data_impl` and `invoke_substate_entry_impl`
-  // TODO: write a generic template that invokes a member function on variant's alternative object
-  // whose index is passed at runtime
+  template<typename StateDataT>
+  constexpr void initialize_substate(StateDataT& state_data)
+  {
+    utils::variant_invocation<Initialize_invocation, StateDataT>::invoke(state_data);
+  }
     
   constexpr auto invalid_state_idx_ = std::numeric_limits<size_t>::max();
   
@@ -152,6 +124,9 @@ namespace uhsm::helpers
       return search_next_state_impl<StateSetT, EventT, HeadTrT, TailTrTs...>(current_state_idx, std::forward<EventT>(evt));
     }
   };
+  
+  // TODO: rename `Next_state_search` `and search_next_state_impl` to indicate
+  // that they call transition actions
   
   template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
   constexpr auto dispatch_event_impl(StateT& state, EventT&& evt) {
@@ -189,13 +164,11 @@ namespace uhsm::helpers
       
       // at this point it is known that at this level a state branch switch occurs
       // TODO: recursively call on_exit on all nested states (in LIFO order) before switching to a new state
-      
+        
       state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
-      // invoke `on_entry()` for new current state
-      Substate_entry_invocation<decltype(state.state_data)>::invoke(state.state_data, state.state_data.index());
-      // recursively set initial state for the new current substate (otherwise, substates remain
-      // at their variant type's first alternative)
-      Substate_data_init<decltype(state.state_data)>::init(state.state_data, state.state_data.index());
+      invoke_substate_entry(state.state_data);    
+      // recursively set initial state for the new current substate
+      initialize_substate(state.state_data);
         
       return true;
     }

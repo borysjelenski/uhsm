@@ -146,6 +146,31 @@ namespace uhsm::utils
       return make_variant_by_index_impl<std::tuple<HeadT, TailTs...>, HeadT, TailTs...>(idx);
     }
   };
+
+  template<typename VariantT, typename Func, typename HeadT, typename... TailTs, typename... ArgTs>
+  constexpr void variant_invoke_impl(VariantT& var, ArgTs&&... args)
+  {
+    if (std::holds_alternative<HeadT>(var)) {
+      Func::invoke(std::get<HeadT>(var));
+    }
+    
+    if constexpr (sizeof...(TailTs) > 0) {
+      variant_invoke_impl<VariantT, Func, TailTs..., ArgTs...>(var, std::forward<ArgTs>(args)...);
+    }
+  }
+  
+  // invokes a functor on an alternative object currently held by the variant
+  template<typename Func, typename VariantT>
+  struct variant_invocation;
+  template<typename Func, typename HeadT, typename... TailTs>
+  struct variant_invocation<Func, std::variant<HeadT, TailTs...>> {
+    template<typename... ArgTs>
+    static constexpr void invoke(std::variant<HeadT, TailTs...>& var, ArgTs&&... args)
+    {
+      variant_invoke_impl<std::variant<HeadT, TailTs...>, Func, HeadT, TailTs..., ArgTs...>(
+        var, std::forward<ArgTs>(args)...);
+    }
+  };
   
   // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
