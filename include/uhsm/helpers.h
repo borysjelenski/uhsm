@@ -283,6 +283,20 @@ namespace uhsm::helpers
   template<typename TransitionTableT>
   using get_state_data_def_t = utils::apply_func_t<std::variant, helpers::extract_state_set_t<TransitionTableT>>;
   
+  template<typename ParentStateT, typename ChildStateT, typename... StateTs>
+  constexpr bool is_in_state(const ParentStateT& state)
+  {
+    if (!std::holds_alternative<ChildStateT>(state.state_data)) {
+      return false;
+    }
+    
+    if constexpr (sizeof...(StateTs) > 0) {
+      return is_in_state<ChildStateT, StateTs...>(std::get<ChildStateT>(state.state_data));
+    } else {
+      return true;
+    }
+  }
+  
   // Compile-time tests
   ////////////////////////////////////////////////////////////////////////////////
   
