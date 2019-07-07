@@ -22,6 +22,7 @@ target_compile_definitions(CppUTestExt PUBLIC CPPUTEST_MEM_LEAK_DETECTION_DISABL
 
 add_executable(uhsm_test
   src/sample_test.cpp
+  src/player_hsm_test.cpp
   src/main.cpp
 )
 target_include_directories(uhsm_test PRIVATE ../include)
