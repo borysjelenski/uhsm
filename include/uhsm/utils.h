@@ -159,6 +159,20 @@ namespace uhsm::utils
     }
   }
   
+  template<typename VariantT, typename Func, typename Arg0T, typename Arg1T,
+    typename HeadT, typename... TailTs>
+  constexpr void variant_invoke_impl(VariantT& var, Arg0T&& arg0, Arg1T&& arg1)
+  {
+    if (std::holds_alternative<HeadT>(var)) {
+      Func::invoke(std::get<HeadT>(var), std::forward<Arg0T>(arg0), std::forward<Arg1T>(arg1));
+    }
+     
+    if constexpr (sizeof...(TailTs) > 0) {
+      variant_invoke_impl<VariantT, Func, Arg0T, Arg1T, TailTs...>(
+        var, std::forward<Arg0T>(arg0), std::forward<Arg1T>(arg1));
+    }
+  }
+  
   // invokes a functor on an alternative object currently held by the variant
   template<typename Func, typename VariantT>
   struct variant_invocation;
@@ -169,6 +183,13 @@ namespace uhsm::utils
     {
       variant_invoke_impl<std::variant<HeadT, TailTs...>, Func, ArgT, HeadT, TailTs...>(
         var, std::forward<ArgT>(arg));
+    }
+    
+    template<typename Arg0T, typename Arg1T>
+    static constexpr void invoke(std::variant<HeadT, TailTs...>& var, Arg0T&& arg0, Arg1T&& arg1)
+    {
+      variant_invoke_impl<std::variant<HeadT, TailTs...>, Func, Arg0T, Arg1T, HeadT, TailTs...>(
+        var, std::forward<Arg0T>(arg0), std::forward<Arg1T>(arg1));
     }
   };
   

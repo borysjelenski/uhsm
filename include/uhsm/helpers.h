@@ -137,7 +137,7 @@ namespace uhsm::helpers
   {
     if (get_tr_src_state_idx_v<StateSetT, TransitionT> == current_state_idx &&
       std::is_same_v<get_tr_event<TransitionT>, EventT>) {
-      // execute action
+
       get_tr_action<TransitionT> action;
       action(std::forward<EventT>(evt));
         
@@ -163,6 +163,55 @@ namespace uhsm::helpers
     }
   };
   
+  template<typename ActionT>
+  struct Action_invocation {
+    template<typename SrcStateT, typename EventT>
+    static void invoke(SrcStateT& src_state, EventT&& evt)
+    {
+      ActionT action;
+      action(src_state, std::forward<EventT>(evt));
+    }
+  };
+  
+  template<typename ActionT, typename StateDataT, typename EventT>
+  constexpr void invoke_action(StateDataT& state_data, EventT&& evt)
+  {
+    utils::variant_invocation<Action_invocation<ActionT>, StateDataT>::invoke(
+      state_data, std::forward<EventT>(evt));
+  }
+  
+  template<typename StateT, typename EventT, typename TransitionT, typename... TransitionTs>
+  constexpr auto get_next_state_perform_action_impl(StateT& state, EventT&& evt)
+  {
+    using Nested_state_set = typename StateT::template State_set<StateT>;
+    
+    if (get_tr_src_state_idx_v<Nested_state_set, TransitionT> == state.state_data.index() &&
+      std::is_same_v<get_tr_event<TransitionT>, EventT>) {        
+      invoke_action<get_tr_action<TransitionT>>(state.state_data, std::forward<EventT>(evt));
+               
+      return get_tr_dest_state_idx_v<Nested_state_set, TransitionT>;
+    }
+    
+    if constexpr (sizeof...(TransitionTs) > 0) {
+      return get_next_state_perform_action_impl<StateT, EventT, TransitionTs...>(
+        state, std::forward<EventT>(evt));
+    } else {
+      return invalid_state_idx_;
+    }
+  }
+  
+  template<typename StateT, typename EventT, typename TransitionTableT>
+  struct Next_state_helper;
+  template<typename StateT, typename EventT, typename HeadTrT, typename... TailTrTs>
+  struct Next_state_helper<StateT, EventT, uhsm::Transition_table<HeadTrT, TailTrTs...>> {
+    static constexpr auto invalid_state_idx = helpers::invalid_state_idx_;
+    static constexpr auto get_next_state_perform_action(StateT& state, EventT&& evt)
+    {
+      return get_next_state_perform_action_impl<StateT, EventT, HeadTrT, TailTrTs...>(
+        state, std::forward<EventT>(evt));
+    }
+  };
+  
   // TODO: rename `Next_state_search` `and search_next_state_impl` to indicate
   // that they call transition actions
   
@@ -180,11 +229,11 @@ namespace uhsm::helpers
         return true;
       }
           
-      // NOTE: the event could not be handled at more nested hierarchy level; try to handle it
-      // at this level
+      // NOTE: the event could not be handled at more nested hierarchy level;
+      // try to handle it at this level
           
-      const auto next_state_idx = Next_state_search<Nested_state_set, EventT, typename StateT::Transitions>
-        ::search(state.state_data.index(), std::forward<EventT>(evt));
+      const auto next_state_idx = Next_state_helper<StateT, EventT, typename StateT::Transitions>
+        ::get_next_state_perform_action(state, std::forward<EventT>(evt));
           
       if (next_state_idx == state.state_data.index()) {
         // this is an internal transition (source state and destination state are the same);
