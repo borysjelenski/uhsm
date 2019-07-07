@@ -166,7 +166,7 @@ namespace uhsm::helpers
   template<typename ActionT>
   struct Action_invocation {
     template<typename SrcStateT, typename EventT>
-    static void invoke(SrcStateT& src_state, EventT&& evt)
+    static void invoke(const SrcStateT& src_state, EventT&& evt)
     {
       ActionT action;
       action(src_state, std::forward<EventT>(evt));
@@ -174,14 +174,14 @@ namespace uhsm::helpers
   };
   
   template<typename ActionT, typename StateDataT, typename EventT>
-  constexpr void invoke_action(StateDataT& state_data, EventT&& evt)
+  constexpr void invoke_action(const StateDataT& state_data, EventT&& evt)
   {
     utils::variant_invocation<Action_invocation<ActionT>, StateDataT>::invoke(
       state_data, std::forward<EventT>(evt));
   }
   
   template<typename StateT, typename EventT, typename TransitionT, typename... TransitionTs>
-  constexpr auto get_next_state_perform_action_impl(StateT& state, EventT&& evt)
+  constexpr auto get_next_state_perform_action_impl(const StateT& state, EventT&& evt)
   {
     using Nested_state_set = typename StateT::template State_set<StateT>;
     
@@ -205,7 +205,7 @@ namespace uhsm::helpers
   template<typename StateT, typename EventT, typename HeadTrT, typename... TailTrTs>
   struct Next_state_helper<StateT, EventT, uhsm::Transition_table<HeadTrT, TailTrTs...>> {
     static constexpr auto invalid_state_idx = helpers::invalid_state_idx_;
-    static constexpr auto get_next_state_perform_action(StateT& state, EventT&& evt)
+    static constexpr auto get_next_state_perform_action(const StateT& state, EventT&& evt)
     {
       return get_next_state_perform_action_impl<StateT, EventT, HeadTrT, TailTrTs...>(
         state, std::forward<EventT>(evt));

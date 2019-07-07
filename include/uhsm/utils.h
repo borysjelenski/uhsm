@@ -159,6 +159,20 @@ namespace uhsm::utils
     }
   }
   
+  template<typename VariantT, typename Func, typename ArgT, typename HeadT, typename... TailTs>
+  constexpr void variant_invoke_impl(const VariantT& var, ArgT&& arg)
+  {
+    if (std::holds_alternative<HeadT>(var)) {
+      Func::invoke(std::get<HeadT>(var), std::forward<ArgT>(arg));
+    }
+     
+    if constexpr (sizeof...(TailTs) > 0) {
+      variant_invoke_impl<VariantT, Func, ArgT, TailTs...>(var, std::forward<ArgT>(arg));
+    }
+  }
+  
+  // TODO: fix code duplication between const and non-const versions of `variant_invoke_impl()`
+  
   template<typename VariantT, typename Func, typename Arg0T, typename Arg1T,
     typename HeadT, typename... TailTs>
   constexpr void variant_invoke_impl(VariantT& var, Arg0T&& arg0, Arg1T&& arg1)
@@ -184,6 +198,15 @@ namespace uhsm::utils
       variant_invoke_impl<std::variant<HeadT, TailTs...>, Func, ArgT, HeadT, TailTs...>(
         var, std::forward<ArgT>(arg));
     }
+    
+    template<typename ArgT>
+    static constexpr void invoke(const std::variant<HeadT, TailTs...>& var, ArgT&& arg)
+    {
+      variant_invoke_impl<std::variant<HeadT, TailTs...>, Func, ArgT, HeadT, TailTs...>(
+        var, std::forward<ArgT>(arg));
+    }
+    
+    // TODO: fix code duplication between const and non-const versions of `invoke()`
     
     template<typename Arg0T, typename Arg1T>
     static constexpr void invoke(std::variant<HeadT, TailTs...>& var, Arg0T&& arg0, Arg1T&& arg1)

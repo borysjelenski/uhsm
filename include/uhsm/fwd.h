@@ -12,7 +12,7 @@ namespace uhsm
     
   struct Empty_action {
     template<typename SrcStateT, typename EventT>
-    void operator()(SrcStateT&, EventT&&) {}
+    void operator()(const SrcStateT&, EventT&&) {}
   };
 }
 
