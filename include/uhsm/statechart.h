@@ -51,13 +51,13 @@ namespace uhsm
   };
   
   template<typename T, typename ParentStateT>
-  struct Complex_state {
+  struct State_machine_def {
     using Parent = ParentStateT;
     
     template<typename U>
-    using Simple_state = uhsm::Simple_state<U, Complex_state<T, Parent>>; 
+    using Simple_state = uhsm::Simple_state<U, State_machine_def<T, Parent>>; 
     template<typename U>
-    using State = uhsm::Complex_state<U, Complex_state<T, Parent>>;
+    using Substate_machine = uhsm::State_machine_def<U, State_machine_def<T, Parent>>;
     template<typename SrcStateT, typename EventT, typename DestStateT,
       typename ActionT = uhsm::Empty_action>
     using Transition = uhsm::Transition<SrcStateT, EventT, DestStateT, ActionT>;
@@ -124,10 +124,8 @@ namespace uhsm
     }
   };
   
-  struct No_parent_state {};
-  
   template<typename T>
-  using Statechart = Complex_state<T, No_parent_state>;
+  using State_machine = State_machine_def<T, No_parent_state>;
 }
 
 #endif

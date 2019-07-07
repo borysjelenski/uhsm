@@ -5,6 +5,8 @@
 
 namespace uhsm
 {
+  struct No_parent_state {};
+  
   template<typename... ElemTs>
   using Transition = std::tuple<ElemTs...>;
   template<typename... TransitionsT>
