@@ -71,47 +71,63 @@ namespace uhsm::helpers
   inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>, StateSetT>;
 
   struct On_entry_invocation {
-    template<typename StateT>
-    static void invoke(StateT& state) { state.on_entry(); }
+    template<typename StateT, typename EventT>
+    static void invoke(StateT& state, EventT&& evt)
+    {
+      state.on_entry(std::forward<EventT>(evt));
+    }
   };
    
-  template<typename StateDataT>
-  constexpr void invoke_substate_entry(StateDataT& state_data)
+  template<typename StateDataT, typename EventT>
+  constexpr void invoke_substate_entry(StateDataT& state_data, EventT&& evt)
   {
-    utils::variant_invocation<On_entry_invocation, StateDataT>::invoke(state_data);
+    utils::variant_invocation<On_entry_invocation, StateDataT>::invoke(
+      state_data, std::forward<EventT>(evt));
   }
   
   struct On_exit_invocation {
-    template<typename StateT>
-    static void invoke(StateT& state) { state.on_exit(); }
+    template<typename StateT, typename EventT>
+    static void invoke(StateT& state, EventT&& evt)
+    {
+      state.on_exit(std::forward<EventT>(evt));
+    }
   };
   
-  template<typename StateDataT>
-  constexpr void invoke_substate_exit(StateDataT& state_data)
+  template<typename StateDataT, typename EventT>
+  constexpr void invoke_substate_exit(StateDataT& state_data, EventT&& evt)
   {
-    utils::variant_invocation<On_exit_invocation, StateDataT>::invoke(state_data);
+    utils::variant_invocation<On_exit_invocation, StateDataT>::invoke(
+      state_data, std::forward<EventT>(evt));
   }
   
   struct Recur_private_on_exit_invocation {
-    template<typename StateT>
-    static void invoke(StateT& state) { state.private_invoke_on_exit(); }
+    template<typename StateT, typename EventT>
+    static void invoke(StateT& state, EventT&& evt)
+    {
+      state.private_invoke_on_exit(std::forward<EventT>(evt));
+    }
   };
   
-  template<typename StateDataT>
-  constexpr void invoke_private_exit_recur(StateDataT& state_data)
+  template<typename StateDataT, typename EventT>
+  constexpr void invoke_private_exit_recur(StateDataT& state_data, EventT&& evt)
   {
-    utils::variant_invocation<Recur_private_on_exit_invocation, StateDataT>::invoke(state_data);
+    utils::variant_invocation<Recur_private_on_exit_invocation, StateDataT>::invoke(
+      state_data, std::forward<EventT>(evt));
   }
   
   struct Initialize_invocation {
-    template<typename StateT>
-    static void invoke(StateT& state) { state.initialize(); }
+    template<typename StateT, typename EventT>
+    static void invoke(StateT& state, EventT&& evt)
+    {
+      state.initialize(std::forward<EventT>(evt));
+    }
   };
   
-  template<typename StateDataT>
-  constexpr void initialize_substate(StateDataT& state_data)
+  template<typename StateDataT, typename EventT>
+  constexpr void initialize_substate(StateDataT& state_data, EventT&& evt)
   {
-    utils::variant_invocation<Initialize_invocation, StateDataT>::invoke(state_data);
+    utils::variant_invocation<Initialize_invocation, StateDataT>::invoke(
+      state_data, std::forward<EventT>(evt));
   }
     
   constexpr auto invalid_state_idx_ = std::numeric_limits<size_t>::max();
@@ -186,12 +202,12 @@ namespace uhsm::helpers
         
       // recursively call on_exit on all current nested states (in LIFO order)
       // before switching to a new state branch
-      invoke_private_exit_recur(state.state_data);
+      invoke_private_exit_recur(state.state_data, std::forward<EventT>(evt));
         
       state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
-      invoke_substate_entry(state.state_data);    
+      invoke_substate_entry(state.state_data, std::forward<EventT>(evt));    
       // recursively set initial state for the new current substate
-      initialize_substate(state.state_data);
+      initialize_substate(state.state_data, std::forward<EventT>(evt));
         
       return true;
     }

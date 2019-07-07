@@ -21,19 +21,25 @@ namespace uhsm
   struct Simple_state {
     using Parent = ParentStateT;
     
-    void on_entry() {}
-    void on_exit() {}
+    template<typename EventT>
+    void on_entry(EventT&&) {}
+    template<typename EventT>
+    void on_exit(EventT&&) {}
     
-    void initialize()
+    void start() {}
+    
+    template<typename EventT>
+    void initialize(EventT&&)
     {
       // NOTE: nothing to be initialized in a simple state
       return;
     }
     
-    void private_invoke_on_exit()
+    template<typename EventT>
+    void private_invoke_on_exit(EventT&& evt)
     {
       auto& derived = static_cast<T&>(*this); 
-      derived.on_exit();
+      derived.on_exit(std::forward<EventT>(evt));
     }
     
     template<typename EventT>
@@ -67,10 +73,20 @@ namespace uhsm
     template<typename U>
     using Initial = typename Derived_traits<U>::Initial;
     
-    void on_entry() {}
-    void on_exit() {}
+    template<typename EventT>
+    void on_entry(EventT&&) {}
+    template<typename EventT>
+    void on_exit(EventT&&) {}
     
-    void initialize()
+    void start()
+    {
+      auto& state_data = (static_cast<T&>(*this)).state_data;
+      state_data = Initial<T>{};
+      (std::get<Initial<T>>(state_data)).start();
+    }
+    
+    template<typename EventT>
+    void initialize(EventT&& evt)
     {
       // WARNING: this member function MUST be called by the user on topmost
       // state machine object BEFORE any events are passed to it;
@@ -85,15 +101,16 @@ namespace uhsm
       state_data = Initial<T>{};
       
       auto& current_state = std::get<Initial<T>>(state_data);
-      current_state.on_entry();
-      current_state.initialize();
+      current_state.on_entry(std::forward<EventT>(evt));
+      current_state.initialize(std::forward<EventT>(evt));
     }
     
-    void private_invoke_on_exit()
+    template<typename EventT>
+    void private_invoke_on_exit(EventT&& evt)
     {
       auto& derived = static_cast<T&>(*this);
-      helpers::invoke_private_exit_recur(derived.state_data);
-      derived.on_exit();
+      helpers::invoke_private_exit_recur(derived.state_data, std::forward<EventT>(evt));
+      derived.on_exit(std::forward<EventT>(evt));
     }
     
     template<typename EventT>
