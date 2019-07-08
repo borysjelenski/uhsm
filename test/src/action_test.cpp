@@ -1,7 +1,14 @@
 #include <CppUTest/TestHarness.h>
 #include <CppUTestExt/MockSupport.h>
-#include <iostream>
 #include "uhsm/state_machine.h"
+
+TEST_GROUP(Action_TestGroup)
+{
+  void teardown()
+  {
+    mock().clear();
+  }
+};
 
 namespace Event
 {
@@ -18,8 +25,6 @@ namespace Action
     template<typename SrcStateT, typename EventT>
     void operator()(const SrcStateT&, EventT&& evt)
     {
-      std::cout << "Dupa\n";
-
       mock().actualCall("turn_led_on");
     }
   };
@@ -49,7 +54,7 @@ namespace Action
   };
 }
 
-struct Player : uhsm::State_machine<Player> {
+struct Player_w_actions : uhsm::State_machine<Player_w_actions> {
   struct Powered_off : Simple_state<Powered_off> {};
   struct Powered_on : Substate_machine<Powered_on> {
     struct Stopped : Simple_state<Stopped> {};
@@ -86,10 +91,14 @@ struct Player : uhsm::State_machine<Player> {
   State_data_def<Transitions> state_data;
 };
 
-TEST_GROUP(Action_TestGroup)
+TEST(Action_TestGroup, React_SimpleTr0_InvokeActionHandler)
 {
-  void teardown()
-  {
-    mock().clear();
-  }
-};
+  Player_w_actions sm;
+  sm.start();
+
+  mock().expectOneCall("turn_led_on");
+
+  sm.react(Event::Pwr_switch_flip{});
+
+  mock().checkExpectations();
+}
