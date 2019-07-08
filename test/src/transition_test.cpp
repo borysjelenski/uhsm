@@ -180,3 +180,39 @@ TEST(Transition_TestGroup, React_InternalCascadeOutTr1_InExpectedState)
   Player::Powered_on::Active::Paused>(sm);
   CHECK(in_state);
 }
+
+TEST(Transition_TestGroup, React_SubstateReentry0_SubstateResettedToInitial)
+{
+  Player sm;
+  sm.start();     // initialized with 'Off'
+
+  sm.react(Event::Pwr_switch_flip{});   // enters 'Powered_on::Stopped'
+  sm.react(Event::Play_pause_btn{});    // enters 'Powered_on::Active::Playing'
+  sm.react(Event::Play_pause_btn{});    // enters 'Powered_on::Active::Paused'
+  sm.react(Event::Pwr_switch_flip{});   // leaves 'Powered_on' substate, enters 'Powered off'
+  sm.react(Event::Pwr_switch_flip{});   // re-enters 'Powered_on' substate, enters 'Powered_on::stopped'
+                                        // ('Powered_on' substate resetted to initial state)
+
+  const bool in_state = uhsm::helpers::is_in_state<
+  Player,
+  Player::Powered_on,
+  Player::Powered_on::Stopped>(sm);
+  CHECK(in_state);
+}
+
+TEST(Transition_TestGroup, React_UnsupportedEventPassed_EventIgnored)
+{
+  Player sm;
+  sm.start();     // initialized with 'Off'
+
+  const bool play_pause_btn_handled = sm.react(Event::Play_pause_btn{});
+  const bool forward_btn_handled = sm.react(Event::Forward_btn{});
+
+  CHECK_FALSE(play_pause_btn_handled);
+  CHECK_FALSE(forward_btn_handled);
+
+  const bool in_state = uhsm::helpers::is_in_state<
+  Player,
+  Player::Powered_off>(sm);
+  CHECK(in_state);
+}
