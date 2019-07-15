@@ -45,6 +45,8 @@ namespace uhsm::utils
     using type = std::tuple<AddedT, TupleTs...>;
   };
   
+  // NOTE: used only by tests
+  // TODO: rename as it binds 'contains' predicate
   template<typename AddedT, typename TupleT>
   using add_unique_t = typename add_unique<contains, AddedT, TupleT>::type;
   
@@ -63,8 +65,13 @@ namespace uhsm::utils
     using type = std::tuple<TailT>;
   };
   
+  // NOTE: used only by tests
+  // TODO: rename as it binds 'contains' predicate
   template<typename TupleT>
   using remove_duplicates_t = typename remove_duplicates<contains, TupleT>::type;
+  
+  template<template<class, class> class EqPred, typename TupleT>
+  inline constexpr bool has_duplicates_v = !std::is_same_v<TupleT, typename remove_duplicates<EqPred, TupleT>::type>;
   
   template<typename AddedT, typename TupleT>
   struct prepend;

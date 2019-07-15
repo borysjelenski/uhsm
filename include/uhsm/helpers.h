@@ -24,6 +24,25 @@ namespace uhsm::helpers
       uhsm::Transition_table<TailTrTs...>>::type;
   };
   
+  template<typename TransitionT, typename TransitionTableT>
+  struct has_tr_w_src_evt {
+    using type = std::false_type;
+  };
+  template<typename MatchSrcStateT, typename MatchEventT, typename... Tr1ElemTs, typename... Tr2ElemTs, typename... TailTrTs>
+  struct has_tr_w_src_evt<uhsm::Transition<MatchSrcStateT, MatchEventT, Tr1ElemTs...>,
+    uhsm::Transition_table<uhsm::Transition<MatchSrcStateT, MatchEventT, Tr2ElemTs...>, TailTrTs...>> {
+    using type = std::true_type;
+  };
+  template<typename MatchSrcStateT, typename MatchEventT, typename SrcStateT, typename EventT,
+    typename... Tr1ElemTs, typename... Tr2ElemTs, typename... TailTrTs>
+  struct has_tr_w_src_evt<uhsm::Transition<MatchSrcStateT, MatchEventT, Tr1ElemTs...>,
+    uhsm::Transition_table<uhsm::Transition<SrcStateT, EventT, Tr2ElemTs...>, TailTrTs...>> {
+    using type = std::false_type;    
+  };
+  
+  template<typename TransitionTableT>
+  inline constexpr bool has_ambiguous_trs_v = utils::has_duplicates_v<helpers::has_tr_w_src_evt, TransitionTableT>;
+  
   template<typename MatchStateT, typename TransitionTableT>
   using has_tr_w_src_state_t = typename has_tr_w_src_state<MatchStateT, TransitionTableT>::type;
   
@@ -413,6 +432,24 @@ namespace uhsm::helpers
     >;
     using State_data_def = get_state_data_def_t<Transitions>;
     static_assert(std::is_same_v<State_data_def, std::variant<StateA, StateB, StateC>>);
+  }
+  
+  namespace Test::HasTrWithSrcEvt_TransitionTablePassed_DetectDuplicates
+  {
+    struct StateA {};
+    struct StateB {};
+    struct StateC {};
+    struct Event1 {};
+    struct Event2 {};
+    using Transitions = uhsm::Transition_table<
+      uhsm::Transition<StateA, Event1, StateB>,
+      uhsm::Transition<StateA, Event1, StateC>,
+      uhsm::Transition<StateB, Event2, StateA>,
+      uhsm::Transition<StateC, Event1, StateA>,
+      uhsm::Transition<StateB, Event2, StateB>
+    >;
+    
+    static_assert(utils::has_duplicates_v<has_tr_w_src_evt, Transitions>);
   }
 }
 
