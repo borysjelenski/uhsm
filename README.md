@@ -12,9 +12,7 @@ All of this makes it applicable in a real-time embedded system (bare-metal or us
 * Transition actions
 * OnEntry()/OnExit() functions
 * Data in event and state types
-
-### Upcoming
-* Transition table validation (since the library already extensively processes the transition table in compile-time, it's easy to add compile-time checks for duplicates; see `utils::remove_duplicates` template which can be easily modified to detect duplicates instead of removing them)
+* Transition table validation
 
 ## Implementation
 The library utilizes the *curiously recurring template pattern* (CRTP) and template metaprogramming techniques. It takes inspiration from Boost Meta State Machine (Boost MSM) in terms of the way of defining the HSM. UHSM is, however, orders of magnitude simpler and does not allocate memory on the heap.
