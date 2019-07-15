@@ -6,7 +6,7 @@
 
 namespace uhsm::helpers
 {
-  // checks if uhsm::Transition_table contains a transition with a given source state;
+  // checks if the transition_table contains a transition with a given source state;
   // works similarly to `contains` template
   template<typename TransitionT, typename TransitionTableT>
   struct has_tr_w_src_state {
@@ -24,6 +24,8 @@ namespace uhsm::helpers
       uhsm::Transition_table<TailTrTs...>>::type;
   };
   
+  // checks if the transition table contains a transition with the same source state and event types
+  // as the transition passed as an argument
   template<typename TransitionT, typename TransitionTableT>
   struct has_tr_w_src_evt {
     using type = std::false_type;
@@ -40,23 +42,26 @@ namespace uhsm::helpers
     using type = std::false_type;    
   };
   
+  // checks if transition table consists of ambiguous transitions i.e. transition with the same (source state, event) pair
+  // but with different dest. state
   template<typename TransitionTableT>
   inline constexpr bool has_ambiguous_trs_v = utils::has_duplicates_v<helpers::has_tr_w_src_evt, TransitionTableT>;
-  
+  // helper typedef for `has_tr_w_src_state`
   template<typename MatchStateT, typename TransitionTableT>
   using has_tr_w_src_state_t = typename has_tr_w_src_state<MatchStateT, TransitionTableT>::type;
-  
+  // adds a transition with a source state A if tranistion table does not contain a transition with source state A
   template<typename TransitionT, typename TransitionTableT>
   using add_unique_tr_w_src_state_t = typename utils::add_unique<has_tr_w_src_state, TransitionT, TransitionTableT>::type;
-  
+  // removes duplicate transitions in terms of their source state (each transition in output table has a unique source state)
   template<typename TransitionTableT>
   using rm_dupl_tr_by_src_t = typename utils::remove_duplicates<has_tr_w_src_state, TransitionTableT>::type;
   
+  // extracts a set of (unique) source states from a transition table
   template<typename TransitionTableT>
   struct extract_state_set {
     using type = utils::flatten_by_1st_t<rm_dupl_tr_by_src_t<TransitionTableT>>;
   };
-  
+  // helper typedef for `extract_state_set`
   template<typename TransitionTableT>
   using extract_state_set_t = typename extract_state_set<TransitionTableT>::type;
   
@@ -71,10 +76,11 @@ namespace uhsm::helpers
   struct get_state_idx_impl<N, MatchStateT, std::tuple<HeadStateT, TailStateTs...>> {
     static constexpr size_t value = get_state_idx_impl<N + 1, MatchStateT, std::tuple<TailStateTs...>>::value;
   };
-  
+  // helper variable template for `get_state_idx_impl`
   template<typename MatchStateT, typename StateSetT>
   inline constexpr size_t get_state_idx_v = get_state_idx_impl<0, MatchStateT, StateSetT>::value;
   
+  // transition element getters
   template<typename TransitionT>
   using get_tr_src_state = std::tuple_element_t<0, TransitionT>;
   template<typename TransitionT>
@@ -84,10 +90,16 @@ namespace uhsm::helpers
   template<typename TransitionT>
   using get_tr_action = std::tuple_element_t<3, TransitionT>;
   
+  // gets index of a transition's source state in a given state set (func. composition of `get_state_idx_v` and `get_tr_src_state`)
   template<typename StateSetT, typename TransitionT>
   inline constexpr size_t get_tr_src_state_idx_v = get_state_idx_v<get_tr_src_state<TransitionT>, StateSetT>;
+  // gets index of a transition's dest. state in a given state set (func. composition of `get_state_idx_v` and `get_tr_dest_state`)
   template<typename StateSetT, typename TransitionT>
   inline constexpr size_t get_tr_dest_state_idx_v = get_state_idx_v<get_tr_dest_state<TransitionT>, StateSetT>;
+
+  // NOTE: the following are the definition of functors being invoked on a current state object (`StateT`)
+  // held by a variant object (`StateDataT`) which consists of all possible states (`StateT`)
+  // that a substate machine can be in at any given time
 
   struct On_entry_invocation {
     template<typename StateT, typename EventT>
@@ -148,9 +160,12 @@ namespace uhsm::helpers
     utils::variant_invocation<Initialize_invocation, StateDataT>::invoke(
       state_data, std::forward<EventT>(evt));
   }
-    
+
+  // indicates that no matching transition table entry was found and the index of the next state
+  // cannot be determined  
   constexpr auto invalid_state_idx_ = std::numeric_limits<size_t>::max();
   
+  // DEPRECATED
   template<typename StateSetT, typename EventT, typename TransitionT, typename... TransitionTs>
   constexpr auto search_next_state_impl(size_t current_state_idx, EventT&& evt)
   {
@@ -169,7 +184,7 @@ namespace uhsm::helpers
       return invalid_state_idx_;
     }
   }
-  
+  // DEPRECATED
   template<typename StateSetT, typename EventT, typename TransitionTableT>
   struct Next_state_search;
   template<typename StateSetT, typename EventT, typename HeadTrT, typename... TailTrTs>
@@ -182,6 +197,7 @@ namespace uhsm::helpers
     }
   };
   
+  // a functor that invokes an action bound by the template paramter
   template<typename ActionT>
   struct Action_invocation {
     template<typename SrcStateT, typename EventT>
@@ -191,7 +207,7 @@ namespace uhsm::helpers
       action(src_state, std::forward<EventT>(evt));
     }
   };
-  
+  // invokes an action on a current state object held by the variant
   template<typename ActionT, typename StateDataT, typename EventT>
   constexpr void invoke_action(const StateDataT& state_data, EventT&& evt)
   {
@@ -199,6 +215,9 @@ namespace uhsm::helpers
       state_data, std::forward<EventT>(evt));
   }
   
+  // traverses the transition table looking for an entry describing a transition source state `StateT`
+  // due to `EventT` event; performs a transition action and return an indexed of the next state
+  // or indicates that this event cannot be handled at this hierarchy level
   template<typename StateT, typename EventT, typename TransitionT, typename... TransitionTs>
   constexpr auto get_next_state_perform_action_impl(const StateT& state, EventT&& evt)
   {
@@ -218,7 +237,7 @@ namespace uhsm::helpers
       return invalid_state_idx_;
     }
   }
-  
+  // helper type unpacking transition types from table type for `get_next_state_perform_action_impl`
   template<typename StateT, typename EventT, typename TransitionTableT>
   struct Next_state_helper;
   template<typename StateT, typename EventT, typename HeadTrT, typename... TailTrTs>
@@ -231,9 +250,7 @@ namespace uhsm::helpers
     }
   };
   
-  // TODO: rename `Next_state_search` `and search_next_state_impl` to indicate
-  // that they call transition actions
-  
+  // a function implementing a base algorithm of a hierarchical state machine
   template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
   constexpr auto dispatch_event_impl(StateT& state, EventT&& evt) {
     using Nested_state_set = typename StateT::template State_set<StateT>;
@@ -256,7 +273,7 @@ namespace uhsm::helpers
           
       if (next_state_idx == state.state_data.index()) {
         // this is an internal transition (source state and destination state are the same);
-        // do not change the state data in any way
+        // do not change the state data in any way; do not call on_entry/on_exit
         return true;
       }
         
@@ -271,10 +288,13 @@ namespace uhsm::helpers
       // recursively call on_exit on all current nested states (in LIFO order)
       // before switching to a new state branch
       invoke_private_exit_recur(state.state_data, std::forward<EventT>(evt));
-        
+      // set current state for this hierarchy level and invoke on_entry on it
       state.state_data = utils::Variant_by_index<Nested_state_set>::make(next_state_idx);
       invoke_substate_entry(state.state_data, std::forward<EventT>(evt));    
-      // recursively set initial state for the new current substate
+      // recursively set initial state for the new current substate (invokes on_entry on nested states)
+      // NOTE: once current state object is assigned to the variant object for this hierarchy level
+      // the nested variant objects are set to their first alternative; initial states for nestes levels
+      // must be set explicitly
       initialize_substate(state.state_data, std::forward<EventT>(evt));
         
       return true;
@@ -288,7 +308,7 @@ namespace uhsm::helpers
       return false;
     }
   }
-  
+  // helper type unpacking nested state types for `dispatch_event_impl`
   template<typename StateT, typename EventT, typename NestedStateSetT>
   struct Event_dispatcher;
   template<typename StateT, typename EventT, typename NestedStateT, typename... NestedStateTs>
@@ -299,9 +319,11 @@ namespace uhsm::helpers
     }
   };
     
+  // gives a definition of state data type (variant) based on transition table
   template<typename TransitionTableT>
   using get_state_data_def_t = utils::apply_func_t<std::variant, helpers::extract_state_set_t<TransitionTableT>>;
   
+  // recursively checks if a substate machine is a given state
   template<typename ParentStateT, typename ChildStateT, typename... StateTs>
   constexpr bool is_in_state(const ParentStateT& state)
   {

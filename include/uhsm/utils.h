@@ -10,7 +10,7 @@
 
 namespace uhsm::utils
 { 
-  // NOTE: checks if a std::tuple contains a type; assumes that it does not
+  // checks if a std::tuple contains a type; assumes that it does not
   // unless 'proven' otherwise
   template<typename MatchT, typename TupleT>
   struct contains {
@@ -30,7 +30,7 @@ namespace uhsm::utils
   template<typename MatchT, typename TupleT>
   using contains_t = typename contains<MatchT, TupleT>::type;
   
-  // NOTE: uniquely adds a type at the original tuple's head
+  // uniquely adds a type at the original tuple's head
   template<template<class, class> class EqualPred, typename AddedT, typename TupleT,
     typename = typename EqualPred<AddedT, TupleT>::type>
   struct add_unique;
@@ -70,20 +70,23 @@ namespace uhsm::utils
   template<typename TupleT>
   using remove_duplicates_t = typename remove_duplicates<contains, TupleT>::type;
   
+  // checks if a tuple contains duplicates in terms of `EqPred` predicate
+  // NOTE: a tuple with removed duplicates is exactly the same as the original tuple 
   template<template<class, class> class EqPred, typename TupleT>
   inline constexpr bool has_duplicates_v = !std::is_same_v<TupleT, typename remove_duplicates<EqPred, TupleT>::type>;
   
+  // adds a type to the head of the tuple
   template<typename AddedT, typename TupleT>
   struct prepend;
   template<typename AddedT, typename... TupleTs>
   struct prepend<AddedT, std::tuple<TupleTs...>> {
     using type = std::tuple<AddedT, TupleTs...>;
   };
-  
+  // helper typedef for `prepend`
   template<typename AddedT, typename TupleT>
   using prepend_t = typename prepend<AddedT, TupleT>::type;
   
-  // gets index of a type in a tuple's type list
+  // gets an index of a type in a tuple's type list
   template<size_t N, typename MatchT, typename TupleT>
   struct tuple_elem_idx_impl;
   template<size_t N, typename MatchT, typename... TailTs>
@@ -94,10 +97,11 @@ namespace uhsm::utils
   struct tuple_elem_idx_impl<N, MatchT, std::tuple<HeadT, TailTs...>> {
     static constexpr size_t value = tuple_elem_idx_impl<N + 1, MatchT, std::tuple<TailTs...>>::value;
   };
-  
+  // helper template variable for `tuple_elem_idx_impl`
   template<typename MatchT, typename TupleT>
   inline constexpr size_t tuple_elem_idx_v = tuple_elem_idx_impl<0, MatchT, TupleT>::value;
   
+  // flattens a tuple of nested tuple by returning a single-dimensional tuple with 1st types of each of the nested tuples
   template<typename TupleT>
   struct flatten_by_1st;  
   template<typename MatchT, typename... OtherTs, typename... TailTupleTs>
@@ -108,23 +112,26 @@ namespace uhsm::utils
   struct flatten_by_1st<std::tuple<std::tuple<MatchT, OtherTs...>>> { 
     using type = std::tuple<MatchT>;
   };
-  
+  // helper typedef for `flatten_by_1st`
   template<typename TupleT>
   using flatten_by_1st_t = typename flatten_by_1st<TupleT>::type;
   
+  // applies a function (template) over a tuple types
   template<template<class...> class Func, typename TupleT>
   struct apply_func;
   template<template<class...> class Func, typename... Ts>
   struct apply_func<Func, std::tuple<Ts...>> {
     using type = Func<Ts...>;
   };
-  
+  // helper typedef for `apply_func`
   template<template<class...> class Func, typename TupleT>
   using apply_func_t = typename apply_func<Func, TupleT>::type;
   
+  // gives a variant type with tuple types as alternatives
   template<typename TupleT>
   using variant_from_tuple_ts = apply_func_t<std::variant, TupleT>;
   
+  // creates a variant object holding i-th alternative type (index known at runtime)
   template<typename TupleT, typename HeadT, typename... TailTs>
   constexpr auto make_variant_by_index_impl(size_t idx)
   {
@@ -144,6 +151,7 @@ namespace uhsm::utils
     }  
   }
   
+  // helper type for unpacking tuple types for `make_variant_by_index_impl`
   template<typename TupleT>
   struct Variant_by_index;
   template<typename HeadT, typename... TailTs>
@@ -154,6 +162,7 @@ namespace uhsm::utils
     }
   };
 
+  // invokes a functor over an object of alternative type currently held by the variant
   template<typename VariantT, typename Func, typename ArgT, typename HeadT, typename... TailTs>
   constexpr void variant_invoke_impl(VariantT& var, ArgT&& arg)
   {
@@ -165,7 +174,7 @@ namespace uhsm::utils
       variant_invoke_impl<VariantT, Func, ArgT, TailTs...>(var, std::forward<ArgT>(arg));
     }
   }
-  
+  // version of `variant_invoke_impl` with variant object passed via const-reference
   template<typename VariantT, typename Func, typename ArgT, typename HeadT, typename... TailTs>
   constexpr void variant_invoke_impl(const VariantT& var, ArgT&& arg)
   {
@@ -179,7 +188,9 @@ namespace uhsm::utils
   }
   
   // TODO: fix code duplication between const and non-const versions of `variant_invoke_impl()`
+  // NOTE: using forwarding references and `std::forward` would allow variant objects to be passed by value
   
+  // version of `variant_invoke_impl` with two functor arguments
   template<typename VariantT, typename Func, typename Arg0T, typename Arg1T,
     typename HeadT, typename... TailTs>
   constexpr void variant_invoke_impl(VariantT& var, Arg0T&& arg0, Arg1T&& arg1)
@@ -194,7 +205,7 @@ namespace uhsm::utils
     }
   }
   
-  // invokes a functor on an alternative object currently held by the variant
+  // helper type for unpacking variant alternative types for `variant_invoke_impl`
   template<typename Func, typename VariantT>
   struct variant_invocation;
   template<typename Func, typename HeadT, typename... TailTs>
@@ -212,9 +223,7 @@ namespace uhsm::utils
       variant_invoke_impl<std::variant<HeadT, TailTs...>, Func, ArgT, HeadT, TailTs...>(
         var, std::forward<ArgT>(arg));
     }
-    
-    // TODO: fix code duplication between const and non-const versions of `invoke()`
-    
+
     template<typename Arg0T, typename Arg1T>
     static constexpr void invoke(std::variant<HeadT, TailTs...>& var, Arg0T&& arg0, Arg1T&& arg1)
     {

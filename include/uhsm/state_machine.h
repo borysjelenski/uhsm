@@ -80,14 +80,6 @@ namespace uhsm
     
     void start()
     {
-      auto& state_data = (static_cast<T&>(*this)).state_data;
-      state_data = Initial<T>{};
-      (std::get<Initial<T>>(state_data)).start();
-    }
-    
-    template<typename EventT>
-    void initialize(EventT&& evt)
-    {      
       // WARNING: this member function MUST be called by the user on topmost
       // state machine object BEFORE any events are passed to it;
       // it recursively constructs objects of initial state for each nesting level;
@@ -96,7 +88,17 @@ namespace uhsm
       // the state machine has direct storage;
       // TODO: add a flag indicating whether the complex state has been initialized
       // check it when processing an event and raise an exception if 
-      
+
+      auto& state_data = (static_cast<T&>(*this)).state_data;
+      state_data = Initial<T>{};
+      (std::get<Initial<T>>(state_data)).start();
+    }
+    
+    template<typename EventT>
+    void initialize(EventT&& evt)
+    {
+      // NOTE: this member function is similar although it does not call on_entry functions
+
       auto& state_data = (static_cast<T&>(*this)).state_data;
       state_data = Initial<T>{};
       
