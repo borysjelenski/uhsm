@@ -87,7 +87,7 @@ namespace uhsm
     
     template<typename EventT>
     void initialize(EventT&& evt)
-    {
+    {      
       // WARNING: this member function MUST be called by the user on topmost
       // state machine object BEFORE any events are passed to it;
       // it recursively constructs objects of initial state for each nesting level;
@@ -116,6 +116,9 @@ namespace uhsm
     template<typename EventT>
     bool react(EventT&& evt)
     {
+      static_assert(!helpers::has_ambiguous_trs_v<Transitions<T>>,
+        "Transition table may not have ambiguous transitions");
+      
       auto& derived = static_cast<T&>(*this); 
       const bool handled = helpers::Event_dispatcher<T, EventT, State_set<T>>::dispatch(
         derived, std::forward<EventT>(evt));
